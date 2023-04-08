@@ -3,7 +3,7 @@ use crate::{context, pool};
 // 储存总调用次数
 // TODO 优化为原子操作
 pub async fn update_count(table: &str, count: &i64) {
-    sqlx::query("update all_table set count = ? where name = ?")
+    sqlx::query("update all_app set count = ? where name = ?")
         .bind(count)
         .bind(table)
         .execute(pool!())
@@ -27,7 +27,7 @@ pub async fn make_table(table: &str) {
         sqlx::query(&sql).execute(pool!()).await.unwrap();
 
         // 将新建的表单插入到记录表中
-        sqlx::query("insert into all_table (name, count) values (?, 0)")
+        sqlx::query("insert into all_app (name, count) values (?, 0)")
             .bind(table)
             .execute(pool!())
             .await

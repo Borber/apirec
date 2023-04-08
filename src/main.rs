@@ -10,18 +10,18 @@ use crate::db::make_table;
 mod common;
 mod config;
 mod db;
+mod log;
 mod model;
-
-// TODO log模块引入
-// TODO 拆分 get 获取 和post 累加
 
 #[tokio::main]
 async fn main() -> Result<()> {
     CONTEXT.get_or_init(init).await;
 
+    init_log!();
+
     let app = Router::new()
         .route("/", get(index))
-        .route("/:app", get(app));
+        .route("/app/:name", get(app_get).post(app_post));
 
     let task = tokio::spawn(async {
         dbsync().await;
@@ -40,10 +40,26 @@ async fn index() -> &'static str {
     "Hello, World!"
 }
 
-async fn app(Path(app): Path<String>) -> String {
-    // TODO 安全检查
+async fn app_get(Path(name): Path<String>) -> String {
+    context!()
+        .counts
+        .read()
+        .get(&name)
+        .unwrap_or(&0)
+        .to_string()
+}
+
+async fn app_post(Path(name): Path<String>) -> String {
+    // 检测 app name 是否合法
+    if !name
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c.eq(&'_'))
+    {
+        return "Invalid app name".to_owned();
+    }
+
     context!().dbmsg.write().push((
-        app.clone(),
+        name.clone(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .expect("Time went backwards")
@@ -53,7 +69,7 @@ async fn app(Path(app): Path<String>) -> String {
     context!()
         .counts
         .write()
-        .entry(app)
+        .entry(name)
         .and_modify(|e| *e += 1)
         .or_insert(1)
         .to_string()
