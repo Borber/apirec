@@ -2,8 +2,6 @@
 server_name: "apirec"
 #server 地址
 server_url: "0.0.0.0:3006"
-#数据库目录
-database: data
 #日志文件存放目录
 log_dir: "logs"
 #日志分割尺寸-单位KB,MB,GB

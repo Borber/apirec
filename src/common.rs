@@ -1,13 +1,10 @@
-use std::{
-    collections::{HashMap, HashSet},
-    path::PathBuf,
-};
+use std::collections::{HashMap, HashSet};
 
 use parking_lot::RwLock;
 use sqlx::{sqlite::SqlitePoolOptions, Pool, Row, Sqlite};
 use tokio::sync::OnceCell;
 
-use crate::{config::CONFIG, model::AppRec};
+use crate::model::AppRec;
 
 pub static CONTEXT: OnceCell<ServiceContext> = OnceCell::const_new();
 
@@ -26,8 +23,9 @@ macro_rules! context {
 }
 
 pub async fn init() -> ServiceContext {
-    let file_path = PathBuf::from(&CONFIG.database);
-    let file_path = file_path.join("db.sqlite");
+    let exe_path = std::env::current_exe().expect("Failed to get current executable");
+    let exe_path = exe_path.parent().unwrap();
+    let file_path = exe_path.join("data").join("db.sqlite");
     let db_path = format!("sqlite://{}", file_path.to_str().unwrap().to_owned());
     // 检测数据库是否存在
     if !file_path.exists() {
