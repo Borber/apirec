@@ -35,8 +35,8 @@ pub struct ApplicationConfig {
 
 impl Default for ApplicationConfig {
     fn default() -> Self {
-        let yml_data = std::fs::read_to_string("application.yml").unwrap();
-        let result: ConfigFile = serde_yaml::from_str(&yml_data).expect("load config file fail");
+        let config_data = std::fs::read_to_string("config.toml").unwrap();
+        let result: ConfigFile = toml::from_str(&config_data).expect("load config file fail");
         let server_name = result
             .server_name
             .unwrap_or(env!("CARGO_PKG_NAME").to_owned());
