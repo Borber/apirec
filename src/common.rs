@@ -24,8 +24,8 @@ macro_rules! context {
 
 pub async fn init() -> ServiceContext {
     let exe_path = std::env::current_exe().expect("Failed to get current executable");
-    let exe_path = exe_path.parent().unwrap();
-    let file_path = exe_path.join("data").join("db.sqlite");
+    let exe_dir = exe_path.parent().unwrap();
+    let file_path = exe_dir.join("data").join("db.sqlite");
     let db_path = format!("sqlite://{}", file_path.to_str().unwrap().to_owned());
     // 检测数据库是否存在
     if !file_path.exists() {

@@ -34,7 +34,6 @@ pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
     #[cfg(not(debug_assertions))]
     {
         use super::CONFIG;
-        std::fs::create_dir(&CONFIG.log_dir);
 
         let log_level = match &CONFIG.log_level[..] {
             "trace" => tracing::Level::TRACE,
@@ -45,7 +44,20 @@ pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
             _ => tracing::Level::INFO,
         };
 
-        let file_appender = tracing_appender::rolling::hourly(&CONFIG.log_dir, &CONFIG.server_name);
+        let exe_path = std::env::current_exe().expect("Failed to get current executable");
+        let exe_dir = exe_path
+            .parent()
+            .expect("Failed to get executable directory");
+        let log_dir = exe_dir.join("logs");
+
+        std::fs::create_dir(&log_dir).expect("Failed to create log directory");
+
+        let file_appender = match &CONFIG.log_split[..] {
+            "hour" => tracing_appender::rolling::hourly(log_dir, &CONFIG.server_name),
+            "minute" => tracing_appender::rolling::minutely(log_dir, &CONFIG.server_name),
+            _ => tracing_appender::rolling::daily(log_dir, &CONFIG.server_name),
+        };
+
         let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
         fmt.with_max_level(log_level)
             .with_ansi(false)

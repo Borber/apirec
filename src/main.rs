@@ -1,7 +1,11 @@
 use std::{collections::HashMap, time::Duration};
 
 use anyhow::{Ok, Result};
-use axum::{extract::Path, routing::get, Router};
+use axum::{
+    extract::Path,
+    routing::{get, post},
+    Router,
+};
 use common::{init, CONTEXT};
 use config::CONFIG;
 
@@ -21,7 +25,8 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/", get(index))
-        .route("/app/:name", get(app_get).post(app_post));
+        .route("/api/add", post(add_app))
+        .route("/api/app/:name", get(app_get).post(app_post));
 
     let task = tokio::spawn(async {
         dbsync().await;
@@ -40,6 +45,12 @@ async fn index() -> &'static str {
     "Hello, World!"
 }
 
+// TODO 新增 app
+async fn add_app() -> String {
+    "add app".to_owned()
+}
+
+// 获取 app 访问记录
 async fn app_get(Path(name): Path<String>) -> String {
     context!()
         .counts
@@ -49,6 +60,7 @@ async fn app_get(Path(name): Path<String>) -> String {
         .to_string()
 }
 
+// 新增 app 访问记录
 async fn app_post(Path(name): Path<String>) -> String {
     // 检测 app name 是否合法
     if !name
@@ -75,6 +87,7 @@ async fn app_post(Path(name): Path<String>) -> String {
         .to_string()
 }
 
+// 数据库同步
 async fn dbsync() {
     loop {
         tokio::time::sleep(Duration::from_secs(30)).await;

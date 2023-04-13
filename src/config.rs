@@ -10,12 +10,10 @@ pub struct ConfigFile {
     pub server_name: Option<String>,
     // 服务地址
     pub server_url: Option<String>,
-    // 日志目录
-    pub log_dir: Option<String>,
-    // 日志文件大小
-    pub log_temp_size: Option<String>,
     // 日志级别
     pub log_level: Option<String>,
+    // 日志分割
+    pub log_split: Option<String>,
 }
 
 /// 配置
@@ -25,12 +23,10 @@ pub struct ApplicationConfig {
     pub server_name: String,
     // 服务地址
     pub server_url: String,
-    // 日志目录
-    pub log_dir: String,
-    // 日志文件大小
-    pub log_temp_size: String,
     // 日志级别
     pub log_level: String,
+    // 日志分割
+    pub log_split: String,
 }
 
 impl Default for ApplicationConfig {
@@ -41,15 +37,13 @@ impl Default for ApplicationConfig {
             .server_name
             .unwrap_or(env!("CARGO_PKG_NAME").to_owned());
         let server_url = result.server_url.unwrap_or("0.0.0.0:8000".to_owned());
-        let log_dir = result.log_dir.unwrap_or("log".to_owned());
-        let log_temp_size = result.log_temp_size.unwrap_or("10mb".to_owned());
         let log_level = result.log_level.unwrap_or("info".to_owned());
+        let log_split = result.log_split.unwrap_or("day".to_owned());
         ApplicationConfig {
             server_name,
             server_url,
-            log_dir,
-            log_temp_size,
             log_level,
+            log_split,
         }
     }
 }
