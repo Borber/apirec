@@ -1,10 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
 use parking_lot::RwLock;
-use sqlx::{sqlite::SqlitePoolOptions, Pool, Row, Sqlite};
+use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
 use tokio::sync::OnceCell;
 
-use crate::model::AppRec;
+use crate::{config::CONFIG, model::AppRec};
 
 pub static CONTEXT: OnceCell<ServiceContext> = OnceCell::const_new();
 
@@ -23,9 +23,7 @@ macro_rules! context {
 }
 
 pub async fn init() -> ServiceContext {
-    let exe_path = std::env::current_exe().expect("Failed to get current executable");
-    let exe_dir = exe_path.parent().unwrap();
-    let file_path = exe_dir.join("data").join("db.sqlite");
+    let file_path = CONFIG.exe_dir.join("data").join("db.sqlite");
     let db_path = format!("sqlite://{}", file_path.to_str().unwrap().to_owned());
     // 检测数据库是否存在
     if !file_path.exists() {
@@ -67,28 +65,38 @@ pub async fn init() -> ServiceContext {
         .map(|rec: AppRec| (rec.name, rec.count))
         .collect();
 
-    // TODO 是否可以通过 counts 直接生成而不用再次查询数据库？
-    let apps: HashSet<String> = sqlx::query("select name from all_app")
-        .fetch_all(&pool)
-        .await
-        .unwrap()
-        .into_iter()
-        .map(|row| row.get::<String, usize>(0))
-        .collect();
+    let apps: HashSet<String> = counts.keys().map(|s| s.to_owned()).collect();
 
-    let dbmsg = vec![];
+    let wait_record = vec![];
+    let wait_app = vec![];
 
     ServiceContext {
         apps: RwLock::new(apps),
         pool,
         counts: RwLock::new(counts),
-        dbmsg: RwLock::new(dbmsg),
+        wait_record: RwLock::new(wait_record),
+        wait_app: RwLock::new(wait_app),
     }
 }
 
 pub struct ServiceContext {
+    // 记录所有已经存在的app
+    // Record all existing apps
     pub apps: RwLock<HashSet<String>>,
+
+    // 数据库连接池
+    // Database connection pool
     pub pool: Pool<Sqlite>,
+
+    // 记录总调用次数
+    // Record the total number of calls
     pub counts: RwLock<HashMap<String, i64>>,
-    pub dbmsg: RwLock<Vec<(String, i64)>>,
+
+    // 等待新增的记录
+    // Waiting for new records to be added
+    pub wait_record: RwLock<Vec<(String, i64)>>,
+
+    // 等待新增的app
+    // Waiting for the new app to be added
+    pub wait_app: RwLock<Vec<String>>,
 }
