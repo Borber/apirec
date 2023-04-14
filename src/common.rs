@@ -4,7 +4,10 @@ use parking_lot::RwLock;
 use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
 use tokio::sync::OnceCell;
 
-use crate::{config::CONFIG, model::AppRec};
+use crate::{
+    config::CONFIG,
+    model::{Apis, Apps},
+};
 
 pub static CONTEXT: OnceCell<ServiceContext> = OnceCell::const_new();
 
@@ -39,12 +42,12 @@ pub async fn init() -> ServiceContext {
             .await
             .unwrap();
         let sql = r#"
-            DROP TABLE IF EXISTS "all_app";
-            CREATE TABLE "all_app" (
+            DROP TABLE IF EXISTS "apps";
+            CREATE TABLE "apps" (
                 "name" TEXT NOT NULL,
-                "count" integer NOT NULL,
                 PRIMARY KEY ("name")
-            );"#;
+            );
+        "#;
         sqlx::query(sql).execute(&conn).await.unwrap();
     }
     // 创建数据库连接池
@@ -55,27 +58,41 @@ pub async fn init() -> ServiceContext {
         .await
         .unwrap();
 
-    // 读取数据库中存储的记录
-    // Read the records from the database
-    let counts: HashMap<String, i64> = sqlx::query_as("select name, count from all_app")
+    // 获取所有 app
+    // Get all apps
+    let apps: HashSet<String> = sqlx::query_as("select name from all_app")
         .fetch_all(&pool)
         .await
         .unwrap()
         .into_iter()
-        .map(|rec: AppRec| (rec.name, rec.count))
+        .map(|item: Apps| item.name)
         .collect();
 
-    let apps: HashSet<String> = counts.keys().map(|s| s.to_owned()).collect();
+    // TODO 考虑是否嵌套 RwLock 来细粒度控制
+    // 获取每个app中各api的调用次数
+    // Get the number of calls to each api in each app
+    let mut api_list = HashMap::new();
+    for app in &apps {
+        let sql = format!("select name, count from {}", app);
 
-    let wait_record = vec![];
-    let wait_app = vec![];
+        let apis: HashMap<String, i64> = sqlx::query_as(&sql)
+            .fetch_all(&pool)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|api: Apis| (api.name, api.count))
+            .collect();
+
+        api_list.insert(app.to_owned(), apis);
+    }
 
     ServiceContext {
         apps: RwLock::new(apps),
         pool,
-        counts: RwLock::new(counts),
-        wait_record: RwLock::new(wait_record),
-        wait_app: RwLock::new(wait_app),
+        apis: RwLock::new(api_list),
+        wait_app: RwLock::new(vec![]),
+        wait_api: RwLock::new(HashMap::new()),
+        wait_record: RwLock::new(HashMap::new()),
     }
 }
 
@@ -90,13 +107,16 @@ pub struct ServiceContext {
 
     // 记录总调用次数
     // Record the total number of calls
-    pub counts: RwLock<HashMap<String, i64>>,
-
-    // 等待新增的记录
-    // Waiting for new records to be added
-    pub wait_record: RwLock<Vec<(String, i64)>>,
+    pub apis: RwLock<HashMap<String, HashMap<String, i64>>>,
 
     // 等待新增的app
     // Waiting for the new app to be added
     pub wait_app: RwLock<Vec<String>>,
+
+    // 记录等待 api
+    pub wait_api: RwLock<HashMap<String, HashSet<String>>>,
+
+    // 等待新增的记录
+    // Waiting for new records to be added
+    pub wait_record: RwLock<HashMap<String, HashMap<String, Vec<i64>>>>,
 }

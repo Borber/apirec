@@ -37,6 +37,10 @@ pub async fn make_table(table: &str) {
     }
 }
 
+// TODO 新建单个 app 表
+
+// TODO 新增 apps 记录
+
 // TODO 原子操作批量插入记录
 // TODO 修改返回类型为Result
 pub async fn add_rec(table: String, time: i64, count: i32) -> bool {
