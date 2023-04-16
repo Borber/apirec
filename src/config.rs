@@ -42,7 +42,6 @@ impl Default for ApplicationConfig {
             Ok(data) => data,
             Err(_) => include_str!("../config.toml").to_owned(),
         };
-        // TODO 固定配置文件位置
         let result: ConfigFile = toml::from_str(&config_data).expect("load config file fail");
         let server_name = result
             .server_name

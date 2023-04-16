@@ -9,13 +9,3 @@ pub struct AddAppDTO {
 pub struct AddApiDTO {
     pub api: String,
 }
-
-#[derive(Deserialize, Debug)]
-pub struct GetApiDTO {
-    pub apis: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct PostApiDTO {
-    pub apis: Vec<String>,
-}

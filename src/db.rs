@@ -1,60 +1,69 @@
-use crate::{context, pool};
+use crate::pool;
 
-// 储存总调用次数
-// TODO 优化为原子操作
-pub async fn update_count(table: &str, count: &i64) {
-    sqlx::query("update all_app set count = ? where name = ?")
+// 更新app表中的api调用次数
+// Update the number of api calls in the app table
+pub async fn update_count(app: &str, api: &str, count: &i64) {
+    let sql = format!("update {} set count = ? where api = ?", app);
+    sqlx::query(&sql)
         .bind(count)
-        .bind(table)
+        .bind(api)
         .execute(pool!())
         .await
         .unwrap();
 }
 
-// TODO 整理所有待添加的记录, 原子操作批量插入记录
-pub async fn make_table(table: &str) {
-    if context!().apps.read().get(table).is_none() {
-        let sql = format!(
-            r#"CREATE TABLE {} (
-            "time" integer NOT NULL,
-            "count" integer NOT NULL,
-            PRIMARY KEY ("time")
-        ); "#,
-            table
-        );
-
-        // 新建表单
-        sqlx::query(&sql).execute(pool!()).await.unwrap();
-
-        // 将新建的表单插入到记录表中
-        sqlx::query("insert into all_app (name, count) values (?, 0)")
-            .bind(table)
-            .execute(pool!())
-            .await
-            .unwrap();
-        // 更新本地记录
-        context!().apps.write().insert(table.to_owned());
-    }
-}
-
-// TODO 新建单个 app 表
-
-// TODO 新增 apps 记录
-
-// TODO 原子操作批量插入记录
-// TODO 修改返回类型为Result
-pub async fn add_rec(table: String, time: i64, count: i32) -> bool {
-    let sql = format!("insert into {} (time, count) values (?, ?)", table);
-    match sqlx::query(&sql)
+// 新增记录
+// Add a record
+pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
+    let sql = format!("insert into {}_{} (time, count) values (?, ?)", app, api);
+    sqlx::query(&sql)
         .bind(time)
         .bind(count)
         .execute(pool!())
         .await
-    {
-        Ok(result) => result.rows_affected() == 1,
-        Err(e) => {
-            println!("{:?}", e);
-            false
-        }
-    }
+        .unwrap();
+}
+
+// 新建 api 表
+// Make a new api table
+pub async fn make_api_table(app: &str, api: &str) {
+    let sql = format!(
+        r#"CREATE TABLE {}_{} (
+            "time" integer NOT NULL,
+            "count" integer NOT NULL,
+            PRIMARY KEY ("time")
+        ); "#,
+        app, api
+    );
+
+    // 新建表单
+    // Make a new table
+    sqlx::query(&sql).execute(pool!()).await.unwrap();
+
+    // 将新建的表单插入到app表中
+    // Insert the new table into the app table
+    let sql = format!("insert into {} (api, count) values (?, 0)", app);
+    sqlx::query(&sql).bind(api).execute(pool!()).await.unwrap();
+}
+
+// 新建 app 表
+// Make a new app table
+pub async fn make_app_table(app: &str) -> bool {
+    let sql = format!(
+        r#"CREATE TABLE {} (
+        "api" text NOT NULL,
+        "count" integer NOT NULL,
+        PRIMARY KEY ("api")
+    ); "#,
+        app
+    );
+
+    // 新建表单
+    sqlx::query(&sql).execute(pool!()).await.unwrap();
+
+    // 将新建的表单插入到apps表中
+    let sql = format!("insert into apps (app) values (?)");
+    sqlx::query(&sql).bind(app).execute(pool!()).await.unwrap();
+
+    true
 }
