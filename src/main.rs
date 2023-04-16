@@ -24,7 +24,6 @@ mod sync;
 mod util;
 
 // TODO 优化返回
-// TODO 更换更小的粒度, 尝试是否能新增一个使用 HashMap 一层结构 用 RwLock控制所有 app_api 的访问次数
 
 #[tokio::main]
 async fn main() -> Result<()> {

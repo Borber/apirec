@@ -70,7 +70,6 @@ pub async fn init() -> ServiceContext {
 
     println!("init apps: {:?}", apps);
 
-    // TODO 考虑是否嵌套 RwLock 来细粒度控制
     // 获取每个app中各api的调用次数
     // Get the number of calls to each api in each app
     let mut apis = HashMap::new();
@@ -99,6 +98,7 @@ pub async fn init() -> ServiceContext {
     }
 }
 
+// TODO 考虑是否嵌套 RwLock 来细粒度控制
 pub struct ServiceContext {
     // 记录所有已经存在的app
     // Record all existing apps
@@ -120,6 +120,7 @@ pub struct ServiceContext {
     // Waiting for the new api to be added
     pub wait_api: RwLock<HashMap<String, HashSet<String>>>,
 
+    // TODO 使用 Arc<RwLock> 使得粒度更小
     // 等待新增的记录
     // Waiting for new records to be added
     #[allow(clippy::type_complexity)]
