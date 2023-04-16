@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::Duration};
 
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 use crate::{
     context,
@@ -58,37 +58,18 @@ pub async fn db_sync() {
             wait_record
         };
 
-        // 合并相同记录
-        // Merge the same record
-        let records: HashMap<&String, HashMap<&String, HashMap<&i64, i64>>> = wait_record
-            .iter()
-            .map(|(app, apis)| {
-                let apis_merged = apis
-                    .iter()
-                    .map(|(api, times)| {
-                        let times_merged = times.iter().fold(HashMap::new(), |mut acc, time| {
-                            acc.entry(time).and_modify(|e| *e += 1).or_insert(1);
-                            acc
-                        });
-                        (api, times_merged)
-                    })
-                    .collect();
-                (app, apis_merged)
-            })
-            .collect();
-
         let globel_apis = { context!().apis.write().clone() };
 
         // 需要更新Api的值
         // Api value to be updated
-        let api_update: HashMap<&String, HashMap<&String, &i64>> = records
+        let api_update: HashMap<&String, HashMap<&String, &i64>> = wait_record
             .iter()
             .map(|(app, apis)| {
                 let apis: HashMap<&String, &i64> = apis
                     .iter()
-                    .map(|(api, _)| (*api, globel_apis.get(*app).unwrap().get(*api).unwrap()))
+                    .map(|(api, _)| (api, globel_apis.get(app).unwrap().get(api).unwrap()))
                     .collect();
-                (*app, apis)
+                (app, apis)
             })
             .collect();
 
@@ -100,7 +81,7 @@ pub async fn db_sync() {
         }
 
         // 更新记录表
-        for (app, apis) in records.iter() {
+        for (app, apis) in wait_record.iter() {
             for (api, times) in apis.iter() {
                 for (time, count) in times.iter() {
                     add_rec(app, api, time, count).await;

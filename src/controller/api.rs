@@ -108,6 +108,13 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> String {
             .and_modify(|e| *e += 1);
     }
 
+    // 获取时间戳
+    // Get timestamp
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+
     // 新增记录中的时间戳
     // Update timestamp in record
     {
@@ -117,13 +124,10 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> String {
             .entry(app)
             .or_insert_with(HashMap::new)
             .entry(api)
-            .or_insert_with(Vec::new)
-            .push(
-                std::time::SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .unwrap()
-                    .as_secs() as i64,
-            );
+            .or_insert_with(HashMap::new)
+            .entry(timestamp)
+            .and_modify(|e| *e += 1)
+            .or_insert_with(|| 1);
     }
 
     "Success".to_owned()

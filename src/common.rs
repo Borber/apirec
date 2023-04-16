@@ -120,8 +120,8 @@ pub struct ServiceContext {
     // Waiting for the new api to be added
     pub wait_api: RwLock<HashMap<String, HashSet<String>>>,
 
-    // TODO 直接收集时间记录, 不直接记录时间戳
     // 等待新增的记录
     // Waiting for new records to be added
-    pub wait_record: RwLock<HashMap<String, HashMap<String, Vec<i64>>>>,
+    #[allow(clippy::type_complexity)]
+    pub wait_record: RwLock<HashMap<String, HashMap<String, HashMap<i64, i64>>>>,
 }
