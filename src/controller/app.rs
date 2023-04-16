@@ -7,24 +7,24 @@ use crate::{
     handler::Json,
     model::{
         dto::AddAppDTO,
-        vo::{Resp, RespVO},
+        vo::{app::GetAppVO, Resp, RespVO},
     },
     util,
 };
 
-// TODO 返回总数和独立访问量
+// TODO 支持部分 api 的查询
 // 获取 app 下所有 api的总访问量
 // Get the total number of visits to all apis under the app
-pub async fn get(Path(app): Path<String>) -> Resp<i64> {
-    let sum: i64 = context!()
-        .apis
-        .read()
-        .get(&app)
-        .unwrap()
-        .iter()
-        .map(|(_, v)| v)
-        .sum();
-    Json(Ok(sum).into())
+pub async fn get(Path(app): Path<String>) -> Resp<GetAppVO> {
+    // 检测 app 是否存在
+    // Check if app exists
+    let flag = { context!().apps.read().get(&app).is_none() };
+    if flag {
+        return Json(RespVO::fail(1002, "App not found".to_owned()));
+    }
+    let apis = { context!().apis.read().get(&app).unwrap().clone() };
+    let total = apis.values().sum::<i64>();
+    Json(Ok(GetAppVO { total, apis }).into())
 }
 
 // 新增 app
