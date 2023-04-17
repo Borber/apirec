@@ -1,12 +1,26 @@
-use std::collections::{HashMap, HashSet};
+pub mod api;
+pub mod app;
+pub mod record;
+
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use parking_lot::RwLock;
 use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
 use tokio::sync::OnceCell;
 
 use crate::{
+    common::app::AllApp,
     config::CONFIG,
     model::{Api, App},
+};
+
+use self::{
+    api::{AllApi, WaitApi},
+    app::WaitApp,
+    record::WaitRecord,
 };
 
 pub static CONTEXT: OnceCell<ServiceContext> = OnceCell::const_new();
@@ -24,6 +38,10 @@ macro_rules! context {
         $crate::common::CONTEXT.get().unwrap()
     };
 }
+
+// 基础计数组件
+// Basic calculation component
+pub type Count = Arc<RwLock<i64>>;
 
 pub async fn init() -> ServiceContext {
     let file_path = CONFIG.exe_dir.join("data").join("db.sqlite");
@@ -76,33 +94,34 @@ pub async fn init() -> ServiceContext {
     for app in &apps {
         let sql = format!("select api, count from {}", app);
 
-        let apis_part: HashMap<String, i64> = sqlx::query_as(&sql)
+        let apis_part: HashMap<String, Arc<RwLock<i64>>> = sqlx::query_as(&sql)
             .fetch_all(&pool)
             .await
             .unwrap()
             .into_iter()
-            .map(|api: Api| (api.api, api.count))
+            .map(|api: Api| (api.api, Arc::new(RwLock::new(api.count))))
             .collect();
 
-        apis.insert(app.to_owned(), apis_part);
+        apis.insert(app.to_owned(), Arc::new(RwLock::new(apis_part)));
     }
     println!("init apis: {:?}", apis);
 
     ServiceContext {
-        apps: RwLock::new(apps),
+        apps: AllApp {
+            set: Arc::new(RwLock::new(apps)),
+        },
         pool,
-        apis: RwLock::new(apis),
-        wait_app: RwLock::new(vec![]),
-        wait_api: RwLock::new(HashMap::new()),
-        wait_record: RwLock::new(HashMap::new()),
+        apis: AllApi::new(apis),
+        wait_app: WaitApp::new(HashSet::new()),
+        wait_api: WaitApi::new(HashMap::new()),
+        wait_record: WaitRecord::new(HashMap::new()),
     }
 }
 
-// TODO 考虑是否嵌套 RwLock 来细粒度控制
 pub struct ServiceContext {
     // 记录所有已经存在的app
     // Record all existing apps
-    pub apps: RwLock<HashSet<String>>,
+    pub apps: AllApp,
 
     // 数据库连接池
     // Database connection pool
@@ -110,19 +129,17 @@ pub struct ServiceContext {
 
     // 记录总调用次数
     // Record the total number of calls
-    pub apis: RwLock<HashMap<String, HashMap<String, i64>>>,
+    pub apis: AllApi,
 
     // 等待新增的app
     // Waiting for the new app to be added
-    pub wait_app: RwLock<Vec<String>>,
+    pub wait_app: WaitApp,
 
     // 等待新增的api
     // Waiting for the new api to be added
-    pub wait_api: RwLock<HashMap<String, HashSet<String>>>,
+    pub wait_api: WaitApi,
 
-    // TODO 使用 Arc<RwLock> 使得粒度更小
     // 等待新增的记录
     // Waiting for new records to be added
-    #[allow(clippy::type_complexity)]
-    pub wait_record: RwLock<HashMap<String, HashMap<String, HashMap<i64, i64>>>>,
+    pub wait_record: WaitRecord,
 }

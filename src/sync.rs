@@ -17,12 +17,7 @@ pub async fn db_sync() {
 
         // 获取需要新增的 app
         // Get new app
-        let wait_app = {
-            let mut lock = context!().wait_app.write();
-            let wait_app = lock.clone();
-            lock.clear();
-            wait_app
-        };
+        let wait_app = { context!().wait_app.get_all() };
 
         debug!("wait_app: {:?}", wait_app);
 
@@ -34,12 +29,7 @@ pub async fn db_sync() {
 
         // 获取需要新增的api
         // Get new api
-        let wait_api = {
-            let mut lock = context!().wait_api.write();
-            let wait_api = lock.clone();
-            lock.clear();
-            wait_api
-        };
+        let wait_api = context!().wait_api.get_apis();
 
         // 新增 api
         // Add api
@@ -51,23 +41,17 @@ pub async fn db_sync() {
 
         // 获取需要新增的记录
         // Get new record
-        let wait_record = {
-            let mut lock = context!().wait_record.write();
-            let wait_record = lock.clone();
-            lock.clear();
-            wait_record
-        };
+        let wait_record = context!().wait_record.get_records();
 
-        let globel_apis = { context!().apis.write().clone() };
-
+        // TODO 一次性拿去所有值, 仅加一次读锁
         // 需要更新Api的值
         // Api value to be updated
-        let api_update: HashMap<&String, HashMap<&String, &i64>> = wait_record
+        let api_update: HashMap<&String, HashMap<&String, i64>> = wait_record
             .iter()
             .map(|(app, apis)| {
-                let apis: HashMap<&String, &i64> = apis
+                let apis: HashMap<&String, i64> = apis
                     .iter()
-                    .map(|(api, _)| (api, globel_apis.get(app).unwrap().get(api).unwrap()))
+                    .map(|(api, _)| (api, context!().apis.get_api(app, api)))
                     .collect();
                 (app, apis)
             })

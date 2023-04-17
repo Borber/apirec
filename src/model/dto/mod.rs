@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct AddAppDTO {
-    pub name: String,
+    pub app: String,
 }
 
 #[derive(Deserialize, Debug)]

@@ -18,38 +18,36 @@ use crate::{
 pub async fn get(Path(app): Path<String>) -> Resp<GetAppVO> {
     // 检测 app 是否存在
     // Check if app exists
-    let flag = { context!().apps.read().get(&app).is_none() };
-    if flag {
+    let flag = { context!().apps.check_app(&app) };
+    if !flag {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     }
-    let apis = { context!().apis.read().get(&app).unwrap().clone() };
-    let total = apis.values().sum::<i64>();
-    Json(Ok(GetAppVO { total, apis }).into())
+    Json(Ok(context!().apis.get_apis(&app)).into())
 }
 
 // 新增 app
 // Add app
-pub async fn add(Json(AddAppDTO { name }): Json<AddAppDTO>) -> Resp<String> {
+pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     // 检测 app name 是否合法
     // Check if app name is valid
-    if !util::is_valid(&name) {
+    if !util::is_valid(&app) {
         return Json(RespVO::fail(1006, "App name is not valid".to_owned()));
     };
 
-    debug!("Add app: {}", name);
-
-    let flag = { context!().apps.read().get(&name).is_some() };
+    let flag = { context!().apps.check_app(&app) };
 
     if flag {
         return Json(RespVO::fail(1003, "App name is not valid".to_owned()));
     }
 
+    debug!("Add app: {}", app);
+
     {
-        context!().apps.write().insert(name.clone());
+        context!().apps.add(&app);
     }
 
     {
-        context!().wait_app.write().push(name);
+        context!().wait_app.add(&app);
     }
 
     Json(Ok("Success".to_owned()).into())

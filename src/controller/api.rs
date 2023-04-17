@@ -1,8 +1,3 @@
-use std::{
-    collections::{HashMap, HashSet},
-    time::UNIX_EPOCH,
-};
-
 use anyhow::Ok;
 use axum::extract::Path;
 use tracing::info;
@@ -17,6 +12,8 @@ use crate::{
     util,
 };
 
+// 新增 Api
+// Add Api
 pub async fn add(
     Path(app): Path<String>,
     Json(AddApiDTO { api }): Json<AddApiDTO>,
@@ -29,21 +26,13 @@ pub async fn add(
 
     // 检测 app 是否存在
     // Check if app exists
-    let flag = { context!().apps.read().get(&app).is_none() };
-    if flag {
+    let flag = { context!().apps.check_app(&app) };
+    if !flag {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     }
 
     // 检测 api 是否已经存在
-    let flag = {
-        context!()
-            .apis
-            .read()
-            .get(&app)
-            .unwrap()
-            .get(&api)
-            .is_some()
-    };
+    let flag = { context!().apis.check_api(&app, &api) };
 
     if flag {
         return Json(RespVO::fail(1003, "Api already exists".to_owned()));
@@ -53,24 +42,15 @@ pub async fn add(
 
     // 将新增 api 添加到 apis内存对象中优先提供计数功能
     // Add the new api to the apis memory object to provide the count function first
+    // 此处保证 api 存在时 app 必定存在 即, 当 app 不存在时 api 一定不存在
     {
-        context!()
-            .apis
-            .write()
-            .entry(app.clone())
-            .or_insert_with(HashMap::new)
-            .insert(api.clone(), 0);
+        context!().apis.add_api(&app, &api)
     }
 
     // 将新增api添加到 wait api 中
     // Add the new api to wait api
     {
-        context!()
-            .wait_api
-            .write()
-            .entry(app)
-            .or_insert_with(HashSet::new)
-            .insert(api);
+        context!().wait_api.add_api(&app, &api)
     }
     Json(RespVO::success("Success".to_owned()))
 }
@@ -78,32 +58,19 @@ pub async fn add(
 // 获取 api 访问数量
 // Get api access count
 pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
-    match context!().apis.read().get(&app) {
-        Some(apis) => apis
-            .get(&api)
-            .map(|e| Json(Ok(*e).into()))
-            .unwrap_or_else(|| Json(RespVO::fail(1004, "Api not found".to_owned()))),
-        None => Json(RespVO::fail(1002, "App not found".to_owned())),
-    }
+    Json(Ok(context!().apis.get_api(&app, &api)).into())
 }
 
 // 新增记录
 // Add record
 pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<bool> {
-    let flag = { context!().apps.read().get(&app).is_none() };
-    if flag {
+    let flag = { context!().apps.check_app(&app) };
+    if !flag {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     };
 
-    let flag = {
-        context!()
-            .apis
-            .read()
-            .get(&app)
-            .unwrap()
-            .get(&api)
-            .is_none()
-    };
+    let flag = { context!().apis.check_api(&app, &api) };
+
     if flag {
         return Json(RespVO::fail(1004, "Api not found".to_owned()));
     };
@@ -111,35 +78,13 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<bool> {
     // 新增内存中的 api 访问数
     // Update api access count in memory
     {
-        context!()
-            .apis
-            .write()
-            .entry(app.clone())
-            .or_insert_with(HashMap::new)
-            .entry(api.clone())
-            .and_modify(|e| *e += 1);
+        context!().apis.update(&app, &api)
     }
 
-    // 获取时间戳
-    // Get timestamp
-    let timestamp = std::time::SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs() as i64;
-
-    // 新增记录中的时间戳
-    // Update timestamp in record
+    // 新增记录
+    // Add record
     {
-        context!()
-            .wait_record
-            .write()
-            .entry(app)
-            .or_insert_with(HashMap::new)
-            .entry(api)
-            .or_insert_with(HashMap::new)
-            .entry(timestamp)
-            .and_modify(|e| *e += 1)
-            .or_insert_with(|| 1);
+        context!().wait_record.add(&app, &api)
     }
 
     Json(RespVO::success(true))
