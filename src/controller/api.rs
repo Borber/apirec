@@ -56,14 +56,17 @@ pub async fn add(
     Json(RespVO::success("Success".to_owned()))
 }
 
-// TODO 优化返回 覆盖 api 不存在情况
 /// 获取 api 访问数量
 /// Get api access count
 pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
+    // 检测 app 是否存在
+    // Check if app exists
     let flag = { context!().apps.check_app(&app) };
     if !flag {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     };
+    // 检测 api 是否存在
+    // Check if api exists
     let flag = { context!().apis.check_api(&app, &api) };
     if !flag {
         return Json(RespVO::fail(1004, "Api not found".to_owned()));
@@ -73,23 +76,24 @@ pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
 
 /// 新增记录
 /// Add record
-pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<bool> {
+pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
+    // 检测 app 是否存在
+    // Check if app exists
     let flag = { context!().apps.check_app(&app) };
     if !flag {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     };
 
+    // 检测 api 是否存在
+    // Check if api exists
     let flag = { context!().apis.check_api(&app, &api) };
-
     if !flag {
         return Json(RespVO::fail(1004, "Api not found".to_owned()));
     };
 
     // 新增内存中的 api 访问数
     // Update api access count in memory
-    {
-        context!().apis.update(&app, &api)
-    }
+    let count = { context!().apis.update(&app, &api) };
 
     // 新增记录
     // Add record
@@ -97,5 +101,5 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<bool> {
         context!().wait_record.add(&app, &api)
     }
 
-    Json(RespVO::success(true))
+    Json(RespVO::success(count))
 }

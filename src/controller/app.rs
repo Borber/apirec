@@ -1,6 +1,6 @@
 use anyhow::Ok;
 use axum::extract::Path;
-use tracing::debug;
+use tracing::info;
 
 use crate::{
     context,
@@ -13,6 +13,8 @@ use crate::{
 };
 
 // TODO 支持部分 api 的查询
+// TODO 支持排序
+// TODO 数量限制
 /// 获取 app 下所有 api的总访问量
 /// Get the total number of visits to all apis under the app
 pub async fn get(Path(app): Path<String>) -> Resp<GetAppVO> {
@@ -33,7 +35,6 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     if !util::is_valid(&app) {
         return Json(RespVO::fail(1006, "App name is not valid".to_owned()));
     };
-    debug!("Add app: {}", app);
 
     let flag = { context!().apps.check_app(&app) };
 
@@ -41,7 +42,7 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
         return Json(RespVO::fail(1003, "App already exists".to_owned()));
     }
 
-    debug!("Add app: {}", app);
+    info!("Add app: {}", app);
 
     {
         context!().apps.add(&app);
@@ -49,6 +50,8 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     {
         context!().wait_app.add(&app);
     }
+    // 将新增 app 添加到 apis 内存对象中优先提供计数功能, 并保证 新增 api 时 app 存在
+    // Add the new app to the apis memory object to provide the count function first, and ensure that the new api exists when the app exists
     {
         context!().apis.add_app(&app);
     }

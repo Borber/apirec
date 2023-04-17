@@ -8,10 +8,12 @@ use tracing::debug;
 
 use crate::model::vo::app::GetAppVO;
 
+/// 记录某app下所有api的调用次数
+/// Record the number of calls to all apis under a certain app
 type CountApi = Arc<RwLock<HashMap<String, Arc<RwLock<i64>>>>>;
 
-/// 记录总调用次数
-/// Record the total number of calls
+/// 记录所有app的api调用次数
+/// Record the number of calls to all apis of all apps
 pub struct AllApi {
     map: Arc<RwLock<HashMap<String, CountApi>>>,
 }
@@ -25,25 +27,17 @@ impl AllApi {
 
     /// 将 api 的调用次数加一
     /// Add one to the number of calls to the api
-    pub fn update(&self, app: &str, api: &str) {
+    pub fn update(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
         let mut count = count.write();
         *count += 1;
+        *count
     }
 
-    // TODO 若新增接口处有提前检测, 则无需再次检测是否已存在
     /// 添加一个 api
     /// Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
-        let flag = { self.map.read().contains_key(app) };
-        if !flag {
-            self.add_app(app);
-        }
-        let flag = { self.map.read().get(app).unwrap().read().contains_key(api) };
-        if flag {
-            return;
-        }
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let mut count_api = count_api.write();
         count_api.insert(api.to_owned(), Arc::new(RwLock::new(0)));
@@ -141,9 +135,7 @@ impl WaitApi {
                 map.insert(app.to_owned(), apis);
             }
         }
-        debug!("get_apis: {:?}", map);
         self.map.write().clear();
-        debug!("wait_api clear");
         map
     }
 }
