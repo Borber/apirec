@@ -2,9 +2,7 @@ use std::{collections::HashMap, sync::Arc, time::UNIX_EPOCH};
 
 use parking_lot::RwLock;
 
-use super::Count;
-
-type RecordApi = Arc<RwLock<HashMap<String, Arc<RwLock<HashMap<i64, Count>>>>>>;
+type RecordApi = Arc<RwLock<HashMap<String, Arc<RwLock<HashMap<i64, Arc<RwLock<i64>>>>>>>>;
 
 // 等待新增的记录
 // Waiting for new records to be added
@@ -61,20 +59,23 @@ impl WaitRecord {
     // Get all the records that need to be added and then clear the map
     pub fn get_records(&self) -> HashMap<String, HashMap<String, HashMap<i64, i64>>> {
         let mut map = HashMap::new();
-        let apps = self.map.read();
-        for (app, record_api) in apps.iter() {
-            let mut apis = HashMap::new();
-            let record_api = record_api.read();
-            for (api, record) in record_api.iter() {
-                let mut times = HashMap::new();
-                let record = record.read();
-                for (time, count) in record.iter() {
-                    times.insert(*time, *count.read());
+        {
+            let apps = self.map.read();
+            for (app, record_api) in apps.iter() {
+                let mut apis = HashMap::new();
+                let record_api = record_api.read();
+                for (api, record) in record_api.iter() {
+                    let mut times = HashMap::new();
+                    let record = record.read();
+                    for (time, count) in record.iter() {
+                        times.insert(*time, *count.read());
+                    }
+                    apis.insert(api.to_owned(), times);
                 }
-                apis.insert(api.to_owned(), times);
+                map.insert(app.to_owned(), apis);
             }
-            map.insert(app.to_owned(), apis);
         }
+
         self.map.write().clear();
         map
     }

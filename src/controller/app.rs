@@ -33,11 +33,12 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     if !util::is_valid(&app) {
         return Json(RespVO::fail(1006, "App name is not valid".to_owned()));
     };
+    debug!("Add app: {}", app);
 
     let flag = { context!().apps.check_app(&app) };
 
     if flag {
-        return Json(RespVO::fail(1003, "App name is not valid".to_owned()));
+        return Json(RespVO::fail(1003, "App already exists".to_owned()));
     }
 
     debug!("Add app: {}", app);

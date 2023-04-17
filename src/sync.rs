@@ -29,7 +29,8 @@ pub async fn db_sync() {
 
         // 获取需要新增的api
         // Get new api
-        let wait_api = context!().wait_api.get_apis();
+        let wait_api = { context!().wait_api.get_apis() };
+        debug!("wait_api: {:?}", wait_api);
 
         // 新增 api
         // Add api
@@ -41,7 +42,8 @@ pub async fn db_sync() {
 
         // 获取需要新增的记录
         // Get new record
-        let wait_record = context!().wait_record.get_records();
+        let wait_record = { context!().wait_record.get_records() };
+        debug!("wait_record: {:?}", wait_record);
 
         // TODO 一次性拿去所有值, 仅加一次读锁
         // 需要更新Api的值
@@ -56,6 +58,7 @@ pub async fn db_sync() {
                 (app, apis)
             })
             .collect();
+        debug!("api_update: {:?}", api_update);
 
         // 更新api表
         for (app, apis) in api_update.iter() {

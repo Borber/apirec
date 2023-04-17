@@ -55,6 +55,7 @@ pub async fn add(
     Json(RespVO::success("Success".to_owned()))
 }
 
+// TODO 优化返回 覆盖 api 不存在情况
 // 获取 api 访问数量
 // Get api access count
 pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
@@ -71,7 +72,7 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<bool> {
 
     let flag = { context!().apis.check_api(&app, &api) };
 
-    if flag {
+    if !flag {
         return Json(RespVO::fail(1004, "Api not found".to_owned()));
     };
 

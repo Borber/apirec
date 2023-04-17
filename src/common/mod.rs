@@ -39,10 +39,6 @@ macro_rules! context {
     };
 }
 
-// 基础计数组件
-// Basic calculation component
-pub type Count = Arc<RwLock<i64>>;
-
 pub async fn init() -> ServiceContext {
     let file_path = CONFIG.exe_dir.join("data").join("db.sqlite");
     let db_path = format!("sqlite://{}", file_path.to_str().unwrap().to_owned());

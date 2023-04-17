@@ -4,12 +4,11 @@ use std::{
 };
 
 use parking_lot::RwLock;
+use tracing::debug;
 
 use crate::model::vo::app::GetAppVO;
 
-use super::Count;
-
-type CountApi = Arc<RwLock<HashMap<String, Count>>>;
+type CountApi = Arc<RwLock<HashMap<String, Arc<RwLock<i64>>>>>;
 
 // 记录总调用次数
 // Record the total number of calls
@@ -23,6 +22,7 @@ impl AllApi {
             map: Arc::new(RwLock::new(map)),
         }
     }
+
     // 将 api 的调用次数加一
     // Add one to the number of calls to the api
     pub fn update(&self, app: &str, api: &str) {
@@ -38,7 +38,7 @@ impl AllApi {
     pub fn add_api(&self, app: &str, api: &str) {
         let flag = { self.map.read().contains_key(api) };
         if !flag {
-            self.add_app(app.to_owned());
+            self.add_app(app);
         }
         let flag = { self.map.read().get(app).unwrap().read().contains_key(api) };
         if flag {
@@ -51,9 +51,9 @@ impl AllApi {
 
     // 新增一个 app
     // Add a new app
-    fn add_app(&self, app: String) {
+    fn add_app(&self, app: &str) {
         let mut apps = self.map.write();
-        apps.insert(app, Arc::new(RwLock::new(HashMap::new())));
+        apps.insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
     }
 
     // 获取 api 的调用次数
@@ -130,12 +130,16 @@ impl WaitApi {
     // Get all the apis that need to be added and then clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
         let mut map = HashMap::new();
-        let apps = self.map.read();
-        for (app, apis) in apps.iter() {
-            let apis = apis.read();
-            map.insert(app.to_owned(), apis.clone());
+        {
+            let apps = { self.map.read() };
+            for (app, apis) in apps.iter() {
+                let apis = { apis.read().clone() };
+                map.insert(app.to_owned(), apis);
+            }
         }
+        debug!("get_apis: {:?}", map);
         self.map.write().clear();
+        debug!("wait_api clear");
         map
     }
 }
