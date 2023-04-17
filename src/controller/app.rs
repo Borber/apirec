@@ -13,8 +13,8 @@ use crate::{
 };
 
 // TODO 支持部分 api 的查询
-// 获取 app 下所有 api的总访问量
-// Get the total number of visits to all apis under the app
+/// 获取 app 下所有 api的总访问量
+/// Get the total number of visits to all apis under the app
 pub async fn get(Path(app): Path<String>) -> Resp<GetAppVO> {
     // 检测 app 是否存在
     // Check if app exists
@@ -25,8 +25,8 @@ pub async fn get(Path(app): Path<String>) -> Resp<GetAppVO> {
     Json(Ok(context!().apis.get_apis(&app)).into())
 }
 
-// 新增 app
-// Add app
+/// 新增 app
+/// Add app
 pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     // 检测 app name 是否合法
     // Check if app name is valid

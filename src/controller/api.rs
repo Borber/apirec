@@ -12,8 +12,8 @@ use crate::{
     util,
 };
 
-// 新增 Api
-// Add Api
+/// 新增 Api
+/// Add Api
 pub async fn add(
     Path(app): Path<String>,
     Json(AddApiDTO { api }): Json<AddApiDTO>,
@@ -32,6 +32,7 @@ pub async fn add(
     }
 
     // 检测 api 是否已经存在
+    // Check if api already exists
     let flag = { context!().apis.check_api(&app, &api) };
 
     if flag {
@@ -56,8 +57,8 @@ pub async fn add(
 }
 
 // TODO 优化返回 覆盖 api 不存在情况
-// 获取 api 访问数量
-// Get api access count
+/// 获取 api 访问数量
+/// Get api access count
 pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     let flag = { context!().apps.check_app(&app) };
     if !flag {
@@ -70,8 +71,8 @@ pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     Json(Ok(context!().apis.get_api(&app, &api)).into())
 }
 
-// 新增记录
-// Add record
+/// 新增记录
+/// Add record
 pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<bool> {
     let flag = { context!().apps.check_app(&app) };
     if !flag {

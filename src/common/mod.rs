@@ -45,6 +45,7 @@ pub async fn init() -> ServiceContext {
     let file_path_s = file_path_s.replace("\\\\?\\", "");
     let db_path = format!("sqlite://{}", file_path_s);
     // 检测数据库是否存在
+    // Check if the database exists
     if !file_path.exists() {
         // 如果数据库文件不存在，创建数据库文件
         // Create the data directory if it doesn't exist
@@ -117,27 +118,27 @@ pub async fn init() -> ServiceContext {
 }
 
 pub struct ServiceContext {
-    // 记录所有已经存在的app
-    // Record all existing apps
+    /// 记录所有已经存在的app
+    /// Record all existing apps
     pub apps: AllApp,
 
-    // 数据库连接池
-    // Database connection pool
+    /// 数据库连接池
+    /// Database connection pool
     pub pool: Pool<Sqlite>,
 
-    // 记录总调用次数
-    // Record the total number of calls
+    /// 记录总调用次数
+    /// Record the total number of calls
     pub apis: AllApi,
 
-    // 等待新增的app
-    // Waiting for the new app to be added
+    /// 等待新增的app
+    /// Waiting for the new app to be added
     pub wait_app: WaitApp,
 
-    // 等待新增的api
-    // Waiting for the new api to be added
+    /// 等待新增的api
+    /// Waiting for the new api to be added
     pub wait_api: WaitApi,
 
-    // 等待新增的记录
-    // Waiting for new records to be added
+    /// 等待新增的记录
+    /// Waiting for new records to be added
     pub wait_record: WaitRecord,
 }

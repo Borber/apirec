@@ -9,7 +9,7 @@ use crate::{
 
 // TODO 支持设置同步间隔
 // TODO 尽量短的写锁, 尽量长的读锁 使用读锁来复制数据, 使用写锁来更新数据
-// 数据库同步
+/// 数据库同步
 pub async fn db_sync() {
     info!("Database sync started");
     loop {

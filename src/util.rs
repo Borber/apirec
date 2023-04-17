@@ -1,4 +1,5 @@
-// 合法性检测
+/// 名称合法性检测
+/// Name validity check
 pub fn is_valid(name: &str) -> bool {
     // 名称需要是字母数字或下划线
     // Name must be alphanumeric or underscore

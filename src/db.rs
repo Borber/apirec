@@ -1,7 +1,7 @@
 use crate::pool;
 
-// 更新app表中的api调用次数
-// Update the number of api calls in the app table
+/// 更新app表中的api调用次数
+/// Update the number of api calls in the app table
 pub async fn update_count(app: &str, api: &str, count: &i64) {
     let sql = format!("update {} set count = ? where api = ?", app);
     sqlx::query(&sql)
@@ -12,8 +12,8 @@ pub async fn update_count(app: &str, api: &str, count: &i64) {
         .unwrap();
 }
 
-// 新增记录
-// Add a record
+/// 新增记录
+/// Add a record
 pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
     let sql = format!("insert into {}_{} (time, count) values (?, ?)", app, api);
     sqlx::query(&sql)
@@ -24,8 +24,8 @@ pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
         .unwrap();
 }
 
-// 新建 api 表
-// Make a new api table
+/// 新建 api 表
+/// Make a new api table
 pub async fn make_api_table(app: &str, api: &str) {
     let sql = format!(
         r#"CREATE TABLE {}_{} (
@@ -46,8 +46,8 @@ pub async fn make_api_table(app: &str, api: &str) {
     sqlx::query(&sql).bind(api).execute(pool!()).await.unwrap();
 }
 
-// 新建 app 表
-// Make a new app table
+/// 新建 app 表
+/// Make a new app table
 pub async fn make_app_table(app: &str) -> bool {
     let sql = format!(
         r#"CREATE TABLE {} (

@@ -2,6 +2,7 @@ use time::{macros::format_description, UtcOffset};
 use tracing_subscriber::{fmt::time::OffsetTime, EnvFilter};
 
 /// 初始化日志模块
+/// Initialize log module
 #[macro_export]
 macro_rules! init_log {
     () => {
@@ -11,6 +12,7 @@ macro_rules! init_log {
 
 pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
     // 设置时区
+    // Set time zone
     let local_time = OffsetTime::new(
         UtcOffset::from_hms(8, 0, 0).unwrap(),
         format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:3]"),
@@ -21,6 +23,7 @@ pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
         .with_timer(local_time);
 
     // 如果是debug模式，日志输出到控制台，否则输出到文件
+    // If it is debug mode, the log is output to the console, otherwise it is output to the file
     #[cfg(debug_assertions)]
     {
         let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());

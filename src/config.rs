@@ -6,31 +6,44 @@ use serde::{Deserialize, Serialize};
 pub static CONFIG: Lazy<ApplicationConfig> = Lazy::new(ApplicationConfig::default);
 
 /// 配置
+/// Configuration
 #[derive(Deserialize)]
 pub struct ConfigFile {
-    // 服务名称
+    /// 服务名称
+    /// Service name
     pub server_name: Option<String>,
-    // 服务端口
+    /// 服务端口
+    /// Service port
     pub port: Option<String>,
-    // 日志级别
+    /// 日志级别
+    /// Log level
     pub log_level: Option<String>,
-    // 日志分割
+    /// 日志分割
+    /// Log split
     pub log_split: Option<String>,
+    // TODO 同步时间配置
 }
 
 /// 配置
+/// Configuration
 #[derive(Debug, Clone, Serialize)]
 pub struct ApplicationConfig {
-    // 服务名称
+    /// 服务名称
+    /// Service name
     pub server_name: String,
-    // 服务地址
+    /// 服务地址
+    /// Service address
     pub server_url: String,
-    // 日志级别
+    /// 日志级别
+    /// Log level
     pub log_level: String,
-    // 日志分割
+    /// 日志分割
+    /// Log split
     pub log_split: String,
-    // 可执行文件目录
+    /// 可执行文件目录
+    /// Executable file directory
     pub exe_dir: PathBuf,
+    // TODO 同步时间配置
 }
 
 impl Default for ApplicationConfig {

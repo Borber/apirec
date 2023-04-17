@@ -10,8 +10,8 @@ use crate::model::vo::app::GetAppVO;
 
 type CountApi = Arc<RwLock<HashMap<String, Arc<RwLock<i64>>>>>;
 
-// 记录总调用次数
-// Record the total number of calls
+/// 记录总调用次数
+/// Record the total number of calls
 pub struct AllApi {
     map: Arc<RwLock<HashMap<String, CountApi>>>,
 }
@@ -23,8 +23,8 @@ impl AllApi {
         }
     }
 
-    // 将 api 的调用次数加一
-    // Add one to the number of calls to the api
+    /// 将 api 的调用次数加一
+    /// Add one to the number of calls to the api
     pub fn update(&self, app: &str, api: &str) {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
@@ -33,8 +33,8 @@ impl AllApi {
     }
 
     // TODO 若新增接口处有提前检测, 则无需再次检测是否已存在
-    // 新增一个 api
-    // Add a new api
+    /// 添加一个 api
+    /// Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
         let flag = { self.map.read().contains_key(app) };
         if !flag {
@@ -49,15 +49,15 @@ impl AllApi {
         count_api.insert(api.to_owned(), Arc::new(RwLock::new(0)));
     }
 
-    // 新增一个 app
-    // Add a new app
+    /// 添加 app
+    /// Add a new app
     pub fn add_app(&self, app: &str) {
         let mut apps = self.map.write();
         apps.insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
     }
 
-    // 获取 api 的调用次数
-    // Get the number of calls to the api
+    /// 获取 api 的调用次数
+    /// Get the number of calls to the api
     pub fn get_api(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
@@ -65,8 +65,8 @@ impl AllApi {
         *count
     }
 
-    // 检测 api 是否存在
-    // Check if the app and api exist
+    /// 检测 api 是否存在
+    /// Check if the app and api exist
     pub fn check_api(&self, app: &str, api: &str) -> bool {
         let flag = { self.map.read().contains_key(app) };
         if !flag {
@@ -76,8 +76,8 @@ impl AllApi {
     }
 
     // TODO 处理 app 不存在的情况
-    // 获取 app 的所有 api 的调用次数
-    // Get the number of calls to all apis in the app
+    /// 获取 app 的所有 api 的调用次数
+    /// Get the number of calls to all apis in the app
     pub fn get_apis(&self, app: &str) -> GetAppVO {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let mut apis = HashMap::new();
@@ -93,12 +93,12 @@ impl AllApi {
     }
 }
 
-// 记录需要新增的 api
-// Record the api that needs to be added
+/// 记录需要新增的 api
+/// Record the api that needs to be added
 type NewApi = Arc<RwLock<HashSet<String>>>;
 
-// 等待新增的api
-// Waiting for the new api to be added
+/// 等待新增的api
+/// Waiting for the new api to be added
 pub struct WaitApi {
     map: Arc<RwLock<HashMap<String, NewApi>>>,
 }
@@ -109,8 +109,8 @@ impl WaitApi {
             map: Arc::new(RwLock::new(map)),
         }
     }
-    // 新增一个 api
-    // Add a new api
+    /// 添加一个 api
+    /// Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
         let flag = { self.map.read().contains_key(app) };
         if !flag {
@@ -121,8 +121,8 @@ impl WaitApi {
         apis.insert(api.to_owned());
     }
 
-    // 新增一个 app
-    // Add a new app
+    /// 添加一个 app
+    /// Add a new app
     fn add_app(&self, app: &str) {
         let mut apps = self.map.write();
         apps.insert(app.to_owned(), Arc::new(RwLock::new(HashSet::new())));
@@ -130,8 +130,8 @@ impl WaitApi {
 
     // TODO 检查其他是否可以使用此方法优化
     // self.set.write().drain().collect()
-    // 获取所有需要添加的 api 并随后清空 map
-    // Get all the apis that need to be added and then clear the map
+    /// 获取所有需要添加的 api 并随后清空 map
+    /// Get all the apis that need to be added and then clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
         let mut map = HashMap::new();
         {

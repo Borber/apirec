@@ -4,8 +4,8 @@ use parking_lot::RwLock;
 
 type RecordApi = Arc<RwLock<HashMap<String, Arc<RwLock<HashMap<i64, Arc<RwLock<i64>>>>>>>>;
 
-// 等待新增的记录
-// Waiting for new records to be added
+/// 等待新增的记录
+/// Waiting for new records to be added
 pub struct WaitRecord {
     map: Arc<RwLock<HashMap<String, RecordApi>>>,
 }
@@ -17,10 +17,11 @@ impl WaitRecord {
         }
     }
 
-    // 添加记录
-    // Add record
+    /// 添加记录
+    /// Add record
     pub fn add(&self, app: &str, api: &str) {
         // 若 app 不存在, 则添加 app
+        // If the app does not exist, add the app
         let flag = { self.map.read().contains_key(app) };
         if !flag {
             self.map
@@ -28,6 +29,7 @@ impl WaitRecord {
                 .insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
         }
         // 若 api 不存在, 则添加 api
+        // If the api does not exist, add the api
         let record_api = { self.map.read().get(app).unwrap().clone() };
         let flag = { record_api.read().contains_key(api) };
         if !flag {
@@ -55,8 +57,8 @@ impl WaitRecord {
 
     // TODO 检查其他是否可以使用此方法优化
     // self.set.write().drain().collect()
-    // 获取所有需要添加的记录并随后清空 map
-    // Get all the records that need to be added and then clear the map
+    /// 获取所有需要添加的记录并随后清空 map
+    /// Get all the records that need to be added and then clear the map
     pub fn get_records(&self) -> HashMap<String, HashMap<String, HashMap<i64, i64>>> {
         let mut map = HashMap::new();
         {
