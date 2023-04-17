@@ -50,7 +50,9 @@ pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
             .expect("Failed to get executable directory");
         let log_dir = exe_dir.join("logs");
 
-        std::fs::create_dir(&log_dir).expect("Failed to create log directory");
+        if !log_dir.exists() {
+            std::fs::create_dir(&log_dir).expect("Failed to create log directory");
+        }
 
         let file_appender = match &CONFIG.log_split[..] {
             "hour" => tracing_appender::rolling::hourly(log_dir, &CONFIG.server_name),

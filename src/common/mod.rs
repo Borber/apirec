@@ -41,7 +41,9 @@ macro_rules! context {
 
 pub async fn init() -> ServiceContext {
     let file_path = CONFIG.exe_dir.join("data").join("db.sqlite");
-    let db_path = format!("sqlite://{}", file_path.to_str().unwrap().to_owned());
+    let file_path_s = file_path.to_str().unwrap().to_owned();
+    let file_path_s = file_path_s.replace("\\\\?\\", "");
+    let db_path = format!("sqlite://{}", file_path_s);
     // 检测数据库是否存在
     if !file_path.exists() {
         // 如果数据库文件不存在，创建数据库文件

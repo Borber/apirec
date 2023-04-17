@@ -59,6 +59,14 @@ pub async fn add(
 // 获取 api 访问数量
 // Get api access count
 pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
+    let flag = { context!().apps.check_app(&app) };
+    if !flag {
+        return Json(RespVO::fail(1002, "App not found".to_owned()));
+    };
+    let flag = { context!().apis.check_api(&app, &api) };
+    if !flag {
+        return Json(RespVO::fail(1004, "Api not found".to_owned()));
+    };
     Json(Ok(context!().apis.get_api(&app, &api)).into())
 }
 

@@ -46,9 +46,11 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     {
         context!().apps.add(&app);
     }
-
     {
         context!().wait_app.add(&app);
+    }
+    {
+        context!().apis.add_app(&app);
     }
 
     Json(Ok("Success".to_owned()).into())

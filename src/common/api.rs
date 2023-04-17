@@ -36,7 +36,7 @@ impl AllApi {
     // 新增一个 api
     // Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
-        let flag = { self.map.read().contains_key(api) };
+        let flag = { self.map.read().contains_key(app) };
         if !flag {
             self.add_app(app);
         }
@@ -51,7 +51,7 @@ impl AllApi {
 
     // 新增一个 app
     // Add a new app
-    fn add_app(&self, app: &str) {
+    pub fn add_app(&self, app: &str) {
         let mut apps = self.map.write();
         apps.insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
     }
@@ -75,14 +75,18 @@ impl AllApi {
         self.map.read().get(app).unwrap().read().contains_key(api)
     }
 
+    // TODO 处理 app 不存在的情况
     // 获取 app 的所有 api 的调用次数
     // Get the number of calls to all apis in the app
     pub fn get_apis(&self, app: &str) -> GetAppVO {
         let count_api = { self.map.read().get(app).unwrap().clone() };
-        let count_api = count_api.read();
         let mut apis = HashMap::new();
-        for (api, count) in count_api.iter() {
-            apis.insert(api.to_owned(), *count.read());
+        {
+            let count_api = count_api.read();
+
+            for (api, count) in count_api.iter() {
+                apis.insert(api.to_owned(), *count.read());
+            }
         }
         let total = apis.values().sum();
         GetAppVO { total, apis }
