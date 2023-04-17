@@ -85,8 +85,6 @@ pub async fn init() -> ServiceContext {
         .map(|item: App| item.app)
         .collect();
 
-    println!("init apps: {:?}", apps);
-
     // 获取每个app中各api的调用次数
     // Get the number of calls to each api in each app
     let mut apis = HashMap::new();
@@ -103,7 +101,6 @@ pub async fn init() -> ServiceContext {
 
         apis.insert(app.to_owned(), Arc::new(RwLock::new(apis_part)));
     }
-    println!("init apis: {:?}", apis);
 
     ServiceContext {
         apps: AllApp {

@@ -4,7 +4,6 @@ use std::{
 };
 
 use parking_lot::RwLock;
-use tracing::debug;
 
 use crate::model::vo::app::GetAppVO;
 
@@ -69,7 +68,6 @@ impl AllApi {
         self.map.read().get(app).unwrap().read().contains_key(api)
     }
 
-    // TODO 处理 app 不存在的情况
     /// 获取 app 的所有 api 的调用次数
     /// Get the number of calls to all apis in the app
     pub fn get_apis(&self, app: &str) -> GetAppVO {
