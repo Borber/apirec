@@ -12,7 +12,7 @@ pub struct AddApiDTO {
 
 /// 获取 app 的访问量
 /// Get app access count
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Debug)]
 pub struct GetAppDTO {
     /// 是否返回 app 全部 api 的访问量
     /// Whether to return the access count of all apis under the app
