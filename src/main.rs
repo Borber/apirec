@@ -19,7 +19,6 @@ mod db;
 mod handler;
 mod log;
 mod model;
-mod service;
 mod sync;
 mod util;
 

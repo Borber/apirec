@@ -6,7 +6,7 @@ use crate::{
     context,
     handler::Json,
     model::{
-        dto::AddAppDTO,
+        dto::{AddAppDTO, GetAppDTO},
         vo::{app::GetAppVO, Resp, RespVO},
     },
     util,
@@ -15,16 +15,25 @@ use crate::{
 // TODO 支持部分 api 的查询
 // TODO 支持排序
 // TODO 数量限制
-/// 获取 app 下所有 api的总访问量
-/// Get the total number of visits to all apis under the app
-pub async fn get(Path(app): Path<String>) -> Resp<GetAppVO> {
+/// 获取 app 的访问量
+/// Get app access count
+pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
     // 检测 app 是否存在
     // Check if app exists
     let flag = { context!().apps.check_app(&app) };
     if !flag {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     }
-    Json(Ok(context!().apis.get_apis(&app)).into())
+    match body {
+        Some(Json(dto)) => {
+            println!("dto:{:?}", dto);
+            Json(Ok(context!().apis.get_apis(&app)).into())
+        }
+        None => {
+            println!("None");
+            Json(Ok(context!().apis.get_apis(&app)).into())
+        }
+    }
 }
 
 /// 新增 app
