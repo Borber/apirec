@@ -49,7 +49,7 @@ pub async fn db_sync() {
         if !wait_record.is_empty() {
             info!("wait_record: {:?}", wait_record);
 
-            // TODO 一次性拿去所有值, 仅加一次读锁
+            // TODO 一次性拿取所有值, 仅加一次读锁
             // 需要更新Api的值
             // Api value to be updated
             let api_update: HashMap<&String, HashMap<&String, i64>> = wait_record

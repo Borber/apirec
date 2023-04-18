@@ -26,7 +26,18 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
     }
     match body {
         Some(Json(dto)) => {
-            println!("dto:{:?}", dto);
+            if Some(true) == dto.all {
+                println!("all");
+            }
+            if Some(true) == dto.sort {
+                println!("sort");
+            }
+            if let Some(limit) = dto.limit {
+                println!("limit:{}", limit);
+            }
+            if let Some(apis) = dto.apis {
+                println!("apis:{:?}", apis);
+            }
             Json(Ok(context!().apis.get_apis(&app)).into())
         }
         None => {

@@ -24,18 +24,16 @@ impl WaitRecord {
         // If the app does not exist, add the app
         let flag = { self.map.read().contains_key(app) };
         if !flag {
-            self.map
-                .write()
-                .insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
+            let mut lock = self.map.write();
+            lock.insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
         }
         // 若 api 不存在, 则添加 api
         // If the api does not exist, add the api
         let record_api = { self.map.read().get(app).unwrap().clone() };
         let flag = { record_api.read().contains_key(api) };
         if !flag {
-            record_api
-                .write()
-                .insert(api.to_owned(), Arc::new(RwLock::new(HashMap::new())));
+            let mut lock = record_api.write();
+            lock.insert(api.to_owned(), Arc::new(RwLock::new(HashMap::new())));
         }
 
         let time = std::time::SystemTime::now()
@@ -45,9 +43,8 @@ impl WaitRecord {
 
         let app = { self.map.read().get(app).unwrap().clone() };
         let api = { app.read().get(api).unwrap().clone() };
-
-        api.write()
-            .entry(time)
+        let mut lock = api.write();
+        lock.entry(time)
             .and_modify(|e| {
                 let mut e = e.write();
                 *e += 1;
@@ -56,6 +53,7 @@ impl WaitRecord {
     }
 
     // TODO 检查其他是否可以使用此方法优化
+    // TODO 是否应该先全部move出, 再重新构建
     // self.set.write().drain().collect()
     /// 获取所有需要添加的记录并随后清空 map
     /// Get all the records that need to be added and then clear the map
@@ -77,8 +75,10 @@ impl WaitRecord {
                 map.insert(app.to_owned(), apis);
             }
         }
-
-        self.map.write().clear();
+        {
+            let mut lock = self.map.write();
+            lock.clear();
+        }
         map
     }
 }

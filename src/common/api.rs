@@ -7,6 +7,7 @@ use parking_lot::RwLock;
 
 use crate::model::vo::app::GetAppVO;
 
+// TODO 使用 原子类型来优化性能
 /// 记录某app下所有api的调用次数
 /// Record the number of calls to all apis under a certain app
 type CountApi = Arc<RwLock<HashMap<String, Arc<RwLock<i64>>>>>;
@@ -133,7 +134,10 @@ impl WaitApi {
                 map.insert(app.to_owned(), apis);
             }
         }
-        self.map.write().clear();
+        {
+            let mut lock = self.map.write();
+            lock.clear();
+        }
         map
     }
 }
