@@ -43,6 +43,7 @@ pub async fn db_sync() {
             }
         }
 
+        // TODO 直接清空列表, 随后拿到返回的数据再进行处理, 随后直接清空
         // 获取需要新增的记录
         // Get new record
         let wait_record = { context!().wait_record.get_records() };

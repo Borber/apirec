@@ -43,7 +43,7 @@ pub struct ApplicationConfig {
     /// 可执行文件目录
     /// Executable file directory
     pub exe_dir: PathBuf,
-    // TODO 同步时间配置
+    // TODO 同步间隔配置
 }
 
 impl Default for ApplicationConfig {

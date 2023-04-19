@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 
 use parking_lot::{Mutex, RwLock};
 
-#[test]
+#[test] 
 fn lock_or_atomic() {
     let format_duration = |d: Duration| {
         let secs = d.as_secs();
