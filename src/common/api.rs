@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicI64, Ordering};
 use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
@@ -7,10 +8,9 @@ use parking_lot::RwLock;
 
 use crate::model::vo::app::GetAppVO;
 
-// TODO 使用 原子类型来优化性能
 /// 记录某app下所有api的调用次数
 /// Record the number of calls to all apis under a certain app
-type CountApi = Arc<RwLock<HashMap<String, Arc<RwLock<i64>>>>>;
+type CountApi = Arc<RwLock<HashMap<String, Arc<AtomicI64>>>>;
 
 /// 记录所有app的api调用次数
 /// Record the number of calls to all apis of all apps
@@ -30,9 +30,7 @@ impl AllApi {
     pub fn update(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
-        let mut count = count.write();
-        *count += 1;
-        *count
+        count.fetch_add(1, Ordering::SeqCst)
     }
 
     /// 添加一个 api
@@ -40,7 +38,7 @@ impl AllApi {
     pub fn add_api(&self, app: &str, api: &str) {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let mut count_api = count_api.write();
-        count_api.insert(api.to_owned(), Arc::new(RwLock::new(0)));
+        count_api.insert(api.to_owned(), Arc::new(AtomicI64::new(0)));
     }
 
     /// 添加 app
@@ -55,8 +53,7 @@ impl AllApi {
     pub fn get_api(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
-        let count = count.read();
-        *count
+        count.load(Ordering::SeqCst)
     }
 
     /// 检测 api 是否存在
@@ -78,7 +75,7 @@ impl AllApi {
             let count_api = count_api.read();
 
             for (api, count) in count_api.iter() {
-                apis.insert(api.to_owned(), *count.read());
+                apis.insert(api.to_owned(), count.load(Ordering::SeqCst));
             }
         }
         let total = apis.values().sum();

@@ -1,8 +1,15 @@
-use std::{collections::HashMap, sync::Arc, time::UNIX_EPOCH};
+use std::{
+    collections::HashMap,
+    sync::{
+        atomic::{AtomicI64, Ordering},
+        Arc,
+    },
+    time::UNIX_EPOCH,
+};
 
 use parking_lot::RwLock;
 
-type RecordApi = Arc<RwLock<HashMap<String, Arc<RwLock<HashMap<i64, Arc<RwLock<i64>>>>>>>>;
+type RecordApi = Arc<RwLock<HashMap<String, Arc<RwLock<HashMap<i64, Arc<AtomicI64>>>>>>>;
 
 /// 等待新增的记录
 /// Waiting for new records to be added
@@ -46,10 +53,9 @@ impl WaitRecord {
         let mut lock = api.write();
         lock.entry(time)
             .and_modify(|e| {
-                let mut e = e.write();
-                *e += 1;
+                e.fetch_add(1, Ordering::SeqCst);
             })
-            .or_insert(Arc::new(RwLock::new(1)));
+            .or_insert(Arc::new(AtomicI64::new(1)));
     }
 
     // TODO 检查其他是否可以使用此方法优化
@@ -68,7 +74,7 @@ impl WaitRecord {
                     let mut times = HashMap::new();
                     let record = record.read();
                     for (time, count) in record.iter() {
-                        times.insert(*time, *count.read());
+                        times.insert(*time, count.load(Ordering::SeqCst));
                     }
                     apis.insert(api.to_owned(), times);
                 }

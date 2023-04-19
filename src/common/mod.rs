@@ -4,7 +4,7 @@ pub mod record;
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::Arc,
+    sync::{atomic::AtomicI64, Arc},
 };
 
 use parking_lot::RwLock;
@@ -91,12 +91,12 @@ pub async fn init() -> ServiceContext {
     for app in &apps {
         let sql = format!("select api, count from {}", app);
 
-        let apis_part: HashMap<String, Arc<RwLock<i64>>> = sqlx::query_as(&sql)
+        let apis_part: HashMap<String, Arc<AtomicI64>> = sqlx::query_as(&sql)
             .fetch_all(&pool)
             .await
             .unwrap()
             .into_iter()
-            .map(|api: Api| (api.api, Arc::new(RwLock::new(api.count))))
+            .map(|api: Api| (api.api, Arc::new(AtomicI64::new(api.count)))) //RwLock::new(api.count)
             .collect();
 
         apis.insert(app.to_owned(), Arc::new(RwLock::new(apis_part)));
