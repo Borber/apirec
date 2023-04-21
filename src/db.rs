@@ -1,11 +1,10 @@
 use crate::pool;
 
-
 /// 更新app表中的api调用次数
 /// Update the number of api calls in the app table
 pub async fn update_count(app: &str, api: &str, count: &i64) {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
-    let sql = format!("update {} set count = ? where api = ?", app_e);
+    let sql = format!(r#"update "{}" set count = ? where api = ?"#, app_e);
     sqlx::query(&sql)
         .bind(count)
         .bind(api)
@@ -20,7 +19,7 @@ pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
     let api_e = base58_monero::encode(api.as_bytes()).unwrap();
     let sql = format!(
-        "insert into {}_{} (time, count) values (?, ?)",
+        r#"insert into "{}_{}" (time, count) values (?, ?)"#,
         app_e, api_e
     );
     sqlx::query(&sql)
@@ -37,7 +36,7 @@ pub async fn make_api_table(app: &str, api: &str) {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
     let api_e = base58_monero::encode(api.as_bytes()).unwrap();
     let sql = format!(
-        r#"CREATE TABLE {}_{} (
+        r#"CREATE TABLE "{}_{}" (
             "time" integer NOT NULL,
             "count" integer NOT NULL,
             PRIMARY KEY ("time")
@@ -51,7 +50,7 @@ pub async fn make_api_table(app: &str, api: &str) {
 
     // 将新建的表单插入到app表中
     // Insert the new table into the app table
-    let sql = format!("insert into {} (api, count) values (?, 0)", app_e);
+    let sql = format!(r#"insert into "{}" (api, count) values (?, 0)"#, app_e);
     sqlx::query(&sql).bind(api).execute(pool!()).await.unwrap();
 }
 
@@ -60,7 +59,7 @@ pub async fn make_api_table(app: &str, api: &str) {
 pub async fn make_app_table(app: &str) -> bool {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
     let sql = format!(
-        r#"CREATE TABLE {} (
+        r#"CREATE TABLE "{}" (
         "api" text NOT NULL,
         "count" integer NOT NULL,
         PRIMARY KEY ("api")
@@ -72,7 +71,7 @@ pub async fn make_app_table(app: &str) -> bool {
     sqlx::query(&sql).execute(pool!()).await.unwrap();
 
     // 将新建的表单插入到apps表中
-    let sql = format!("insert into apps (app) values (?)");
+    let sql = format!(r#"insert into "apps" (app) values (?)"#);
     sqlx::query(&sql).bind(app).execute(pool!()).await.unwrap();
 
     true

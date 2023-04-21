@@ -5,6 +5,7 @@ use axum::{
 };
 use common::{init, CONTEXT};
 use config::CONFIG;
+use tower_http::cors::{Any, CorsLayer};
 use tracing::info;
 
 use crate::{
@@ -38,6 +39,12 @@ async fn main() -> Result<()> {
         .route(
             "/api/:app/:api",
             get(ApiController::get).post(ApiController::post),
+        )
+        .layer(
+            CorsLayer::new()
+                .allow_origin(Any)
+                .allow_methods(Any)
+                .allow_headers(Any),
         );
 
     // 数据库同步任务
