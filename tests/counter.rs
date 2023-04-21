@@ -1,12 +1,11 @@
+use parking_lot::{Mutex, RwLock};
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::Arc;
-use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
+use tokio::task::spawn;
 
-use parking_lot::{Mutex, RwLock};
-
-#[test] 
-fn lock_or_atomic() {
+#[tokio::test]
+async fn lock_or_atomic() {
     let format_duration = |d: Duration| {
         let secs = d.as_secs();
         let millis = d.subsec_millis();
@@ -16,11 +15,11 @@ fn lock_or_atomic() {
 
     // 测试使用读写锁的性能
     let counter1 = Arc::new(RwLock::new(0i64));
-    let start = Instant::now();
-    let mut threads = vec![];
+    let start = std::time::Instant::now();
+    let mut tasks = vec![];
     for _ in 0..100 {
         let counter = Arc::clone(&counter1);
-        let thread = thread::spawn(move || {
+        let task = spawn(async move {
             for _ in 0..10000 {
                 let mut write_value = counter.write();
                 *write_value += 1;
@@ -30,21 +29,19 @@ fn lock_or_atomic() {
                 drop(read_value);
             }
         });
-        threads.push(thread);
+        tasks.push(task);
     }
-    for thread in threads {
-        thread.join().unwrap();
-    }
+    futures::future::join_all(tasks).await;
     let elapsed = start.elapsed();
     let counter1_value = *counter1.read();
 
     // 测试使用互斥锁的性能
     let counter2 = Arc::new(Mutex::new(0i64));
-    let start = Instant::now();
-    let mut threads = vec![];
+    let start = std::time::Instant::now();
+    let mut tasks = vec![];
     for _ in 0..100 {
         let counter = Arc::clone(&counter2);
-        let thread = thread::spawn(move || {
+        let task = spawn(async move {
             for _ in 0..10000 {
                 {
                     let mut write_value = counter.lock();
@@ -55,54 +52,51 @@ fn lock_or_atomic() {
                 }
             }
         });
-        threads.push(thread);
+        tasks.push(task);
     }
-    for thread in threads {
-        thread.join().unwrap();
-    }
+    futures::future::join_all(tasks).await;
     let elapsed2 = start.elapsed();
     let counter2_value = *counter2.lock();
 
-    // 测试使用原子操作的性能
-    let counter3 = Arc::new(RwLock::new(AtomicI64::new(0)));
-    let start = Instant::now();
-    let mut threads = vec![];
+    // 测试使用读写锁的性能
+    let counter3 = Arc::new(RwLock::new(0i64));
+    let start = std::time::Instant::now();
+    let mut tasks = vec![];
     for _ in 0..100 {
         let counter = Arc::clone(&counter3);
-        let thread = thread::spawn(move || {
+        let task = spawn(async move {
             for _ in 0..10000 {
-                counter.write().fetch_add(1, Ordering::SeqCst);
-                let _ = counter.read().load(Ordering::SeqCst);
+                let mut write_value = counter.write();
+                *write_value += 1;
+                drop(write_value);
+                let read_value = counter.read();
+                let _ = *read_value;
+                drop(read_value);
             }
         });
-        threads.push(thread);
+        tasks.push(task);
     }
-    for thread in threads {
-        thread.join().unwrap();
-    }
+    futures::future::join_all(tasks).await;
     let elapsed3 = start.elapsed();
-    let counter3_value = counter3.read().load(Ordering::SeqCst);
+    let counter3_value = *counter3.read();
 
     // 测试不加锁的原子操作
     let counter4 = Arc::new(AtomicI64::new(0));
-    let start = Instant::now();
-    let mut threads = vec![];
+    let start = std::time::Instant::now();
+    let mut tasks = vec![];
     for _ in 0..100 {
         let counter = Arc::clone(&counter4);
-        let thread = thread::spawn(move || {
+        let task = spawn(async move {
             for _ in 0..10000 {
                 counter.fetch_add(1, Ordering::SeqCst);
                 let _ = counter.load(Ordering::SeqCst);
             }
         });
-        threads.push(thread);
+        tasks.push(task);
     }
-    for thread in threads {
-        thread.join().unwrap();
-    }
+    futures::future::join_all(tasks).await;
     let elapsed4 = start.elapsed();
     let counter4_value = counter4.load(Ordering::SeqCst);
-
     // 输出结果
     println!("+----------------------+----------------------+----------------------+----------------------+");
     println!("| Lock type            | Counter value        | Elapsed time         | Throughput           |");

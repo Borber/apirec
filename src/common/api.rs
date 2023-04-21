@@ -6,8 +6,6 @@ use std::{
 
 use parking_lot::RwLock;
 
-use crate::model::vo::app::GetAppVO;
-
 /// 记录某app下所有api的调用次数
 /// Record the number of calls to all apis under a certain app
 type CountApi = Arc<RwLock<HashMap<String, Arc<AtomicI64>>>>;
@@ -66,20 +64,30 @@ impl AllApi {
         self.map.read().get(app).unwrap().read().contains_key(api)
     }
 
+    // TODO 其余地方有没有可以使用 count_api.values() 来获取所有值
+    /// 获取 app 总调用次数
+    /// Get the total number of calls to the app
+    pub fn get_sum(&self, app: &str) -> i64 {
+        let count_api = { self.map.read().get(app).unwrap().clone() };
+        let count_api = count_api.read();
+        let mut sum = 0;
+        for count in count_api.values() {
+            sum += count.load(Ordering::SeqCst);
+        }
+        sum
+    }
+
     /// 获取 app 的所有 api 的调用次数
     /// Get the number of calls to all apis in the app
-    pub fn get_apis(&self, app: &str) -> GetAppVO {
+    pub fn get_apis(&self, app: &str) -> HashMap<String, i64> {
         let count_api = { self.map.read().get(app).unwrap().clone() };
-        let mut apis = HashMap::new();
-        {
-            let count_api = count_api.read();
 
-            for (api, count) in count_api.iter() {
-                apis.insert(api.to_owned(), count.load(Ordering::SeqCst));
-            }
-        }
-        let total = apis.values().sum();
-        GetAppVO { total, apis }
+        let x = count_api
+            .read()
+            .iter()
+            .map(|(api, count)| (api.to_owned(), count.load(Ordering::SeqCst)))
+            .collect();
+        x
     }
 }
 

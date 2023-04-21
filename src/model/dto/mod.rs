@@ -14,11 +14,8 @@ pub struct AddApiDTO {
 /// Get app access count
 #[derive(Deserialize, Debug)]
 pub struct GetAppDTO {
-    /// 是否返回 app 全部 api 的访问量
-    /// Whether to return the access count of all apis under the app
-    pub all: Option<bool>,
-    /// 是否需要排序
-    /// Whether to sort
+    /// 排序方式指定
+    /// Sort method specification
     pub sort: Option<bool>,
     /// 限制返回数量
     /// Limit the number of returns

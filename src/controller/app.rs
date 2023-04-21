@@ -7,14 +7,14 @@ use crate::{
     handler::Json,
     model::{
         dto::{AddAppDTO, GetAppDTO},
-        vo::{app::GetAppVO, Resp, RespVO},
+        vo::{
+            app::{ApiCount, GetAppVO},
+            Resp, RespVO,
+        },
     },
     util,
 };
 
-// TODO 支持部分 api 的查询
-// TODO 支持排序
-// TODO 数量限制
 /// 获取 app 的访问量
 /// Get app access count
 pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
@@ -26,24 +26,51 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
     }
     match body {
         Some(Json(dto)) => {
-            if Some(true) == dto.all {
-                println!("all");
+            let apis = context!().apis.get_apis(&app);
+            let total: i64 = apis.values().sum();
+
+            // 将 apis 转换为 ApiCount 结构体, 以便排序
+            // Convert apis to ApiCount structure for sorting
+            let mut apis: Vec<ApiCount> = apis
+                .into_iter()
+                .map(|(api, count)| ApiCount { api, count })
+                .collect();
+
+            // 除非特别指定, 否则默认按从大到小顺序
+            // Unless specified, the default is in descending order
+            match dto.sort {
+                Some(false) => apis.sort_by(|a, b| b.count.cmp(&a.count)),
+                _ => apis.sort_by(|a, b| a.count.cmp(&b.count)),
             }
-            if Some(true) == dto.sort {
-                println!("sort");
-            }
-            if let Some(limit) = dto.limit {
-                println!("limit:{}", limit);
-            }
-            if let Some(apis) = dto.apis {
-                println!("apis:{:?}", apis);
-            }
-            Json(Ok(context!().apis.get_apis(&app)).into())
+
+            // 返回部分结果
+            // Return part of the result
+            let apis = match dto.apis {
+                Some(parts) => apis
+                    .into_iter()
+                    .filter(|a| parts.contains(&a.api))
+                    .collect(),
+                None => match dto.limit {
+                    Some(limit) => apis.into_iter().take(limit as usize).collect(),
+                    None => apis,
+                },
+            };
+
+            Json(
+                Ok(GetAppVO {
+                    total,
+                    apis: Some(apis),
+                })
+                .into(),
+            )
         }
-        None => {
-            println!("None");
-            Json(Ok(context!().apis.get_apis(&app)).into())
-        }
+        None => Json(
+            Ok(GetAppVO {
+                total: context!().apis.get_sum(&app),
+                apis: None,
+            })
+            .into(),
+        ),
     }
 }
 
