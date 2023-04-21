@@ -14,7 +14,7 @@ pub struct ConfigFile {
     pub server_name: Option<String>,
     /// 服务端口
     /// Service port
-    pub port: Option<String>,
+    pub port: Option<u16>,
     /// 日志级别
     /// Log level
     pub log_level: Option<String>,
@@ -64,8 +64,8 @@ impl Default for ApplicationConfig {
             .server_name
             .unwrap_or(env!("CARGO_PKG_NAME").to_owned());
 
-        let server_url = result.port.unwrap_or("8000".to_owned());
-        let server_url = format!("0.0.0.0:{}", server_url);
+        let port = result.port.unwrap_or(8000);
+        let server_url = format!("0.0.0.0:{}", port);
 
         let log_level = result.log_level.unwrap_or("info".to_owned());
         let log_split = result.log_split.unwrap_or("day".to_owned());

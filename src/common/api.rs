@@ -64,7 +64,6 @@ impl AllApi {
         self.map.read().get(app).unwrap().read().contains_key(api)
     }
 
-    // TODO 其余地方有没有可以使用 count_api.values() 来获取所有值
     /// 获取 app 总调用次数
     /// Get the total number of calls to the app
     pub fn get_sum(&self, app: &str) -> i64 {
@@ -126,22 +125,16 @@ impl WaitApi {
         apps.insert(app.to_owned(), Arc::new(RwLock::new(HashSet::new())));
     }
 
-    // TODO 检查其他是否可以使用此方法优化
-    // self.set.write().drain().collect()
-    /// 获取所有需要添加的 api 并随后清空 map
-    /// Get all the apis that need to be added and then clear the map
+    /// 获取所有需要添加的 api 并清空 map
+    /// Get all the apis that need to be added and clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
         let mut map = HashMap::new();
         {
-            let apps = { self.map.read() };
+            let apps = { self.map.write().drain().collect::<HashMap<_, _>>() };
             for (app, apis) in apps.iter() {
                 let apis = { apis.read().clone() };
                 map.insert(app.to_owned(), apis);
             }
-        }
-        {
-            let mut lock = self.map.write();
-            lock.clear();
         }
         map
     }

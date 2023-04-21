@@ -58,15 +58,12 @@ impl WaitRecord {
             .or_insert(Arc::new(AtomicI64::new(1)));
     }
 
-    // TODO 检查其他是否可以使用此方法优化
-    // TODO 是否应该先全部move出, 再重新构建
-    // self.set.write().drain().collect()
-    /// 获取所有需要添加的记录并随后清空 map
-    /// Get all the records that need to be added and then clear the map
+    /// 获取所有需要添加的记录并清空 map
+    /// Get all records that need to be added and clear the map
     pub fn get_records(&self) -> HashMap<String, HashMap<String, HashMap<i64, i64>>> {
         let mut map = HashMap::new();
         {
-            let apps = self.map.read();
+            let apps = { self.map.write().drain().collect::<HashMap<_, _>>() };
             for (app, record_api) in apps.iter() {
                 let mut apis = HashMap::new();
                 let record_api = record_api.read();
@@ -80,10 +77,6 @@ impl WaitRecord {
                 }
                 map.insert(app.to_owned(), apis);
             }
-        }
-        {
-            let mut lock = self.map.write();
-            lock.clear();
         }
         map
     }

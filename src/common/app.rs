@@ -45,7 +45,6 @@ impl WaitApp {
     /// 获取所有需要新增的 App
     /// Get all Apps that need to be added
     pub fn get_all(&self) -> HashSet<String> {
-        // TODO 检查其他方法是否可以使用此方式优化
         let mut lock = self.set.write();
         lock.drain().collect()
     }
