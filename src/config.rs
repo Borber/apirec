@@ -21,7 +21,9 @@ pub struct ConfigFile {
     /// 日志分割
     /// Log split
     pub log_split: Option<String>,
-    // TODO 同步时间配置
+    /// 同步间隔
+    /// Synchronization interval
+    pub sync_interval: Option<u64>,
 }
 
 /// 配置
@@ -43,9 +45,11 @@ pub struct ApplicationConfig {
     /// 可执行文件目录
     /// Executable file directory
     pub exe_dir: PathBuf,
-    // TODO 同步间隔配置
+    /// 同步间隔
+    /// Synchronization interval
+    pub sync_interval: u64,
 }
-
+// TODO 这块默认配置应该还有优化的地方
 impl Default for ApplicationConfig {
     fn default() -> Self {
         let exe_path = std::env::current_exe().expect("Failed to get current executable");
@@ -65,12 +69,14 @@ impl Default for ApplicationConfig {
 
         let log_level = result.log_level.unwrap_or("info".to_owned());
         let log_split = result.log_split.unwrap_or("day".to_owned());
+        let sync_interval = result.sync_interval.unwrap_or(30);
         ApplicationConfig {
             server_name,
             server_url,
             log_level,
             log_split,
             exe_dir: exe_dir.to_path_buf(),
+            sync_interval,
         }
     }
 }

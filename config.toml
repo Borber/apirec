@@ -1,8 +1,10 @@
 #名称
 server_name = "apirec"
-#server 地址
-server_url = "0.0.0.0:8000"
+#服务端口
+port = "0.0.0.0:8000"
 #日志级别
 log_level = "info"
 #日志分割 day, hour, minute
 log_split = "day"
+#同步间隔
+sync_interval = 30

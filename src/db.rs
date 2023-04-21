@@ -1,6 +1,5 @@
 use crate::pool;
 
-// TODO 应用名 dfdf_fdf 可能和 dfdf/fdf 冲突
 
 /// 更新app表中的api调用次数
 /// Update the number of api calls in the app table

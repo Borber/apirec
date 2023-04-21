@@ -3,17 +3,17 @@ use std::{collections::HashMap, time::Duration};
 use tracing::info;
 
 use crate::{
+    config::CONFIG,
     context,
     db::{add_rec, make_api_table, make_app_table, update_count},
 };
 
-// TODO 支持设置同步间隔
 /// 数据库同步
 /// Database sync
 pub async fn db_sync() {
     info!("Database sync task started");
     loop {
-        tokio::time::sleep(Duration::from_secs(30)).await;
+        tokio::time::sleep(Duration::from_secs(CONFIG.sync_interval)).await;
 
         // 获取需要新增的 app
         // Get new app
@@ -50,7 +50,7 @@ pub async fn db_sync() {
         if !wait_record.is_empty() {
             info!("wait_record: {:?}", wait_record);
 
-            // TODO 一次性拿取所有值, 仅加一次读锁
+            // TODO 一次性拿取所有值, 仅加一次写锁
             // 需要更新Api的值
             // Api value to be updated
             let api_update: HashMap<&String, HashMap<&String, i64>> = wait_record

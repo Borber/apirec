@@ -22,7 +22,6 @@ mod model;
 mod sync;
 mod util;
 
-// TODO 优化返回
 #[tokio::main]
 async fn main() -> Result<()> {
     CONTEXT.get_or_init(init).await;
