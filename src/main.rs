@@ -23,11 +23,6 @@ mod sync;
 mod util;
 
 // TODO 优化返回
-// TODO 写入过程异步化
-// TODO 使用 base58 来支持更多的 app 和 api
-// TODO 支持 app api 名称 包括 连字符、下划线、数字、字母 句号 波浪线 中文？
-// TODO 限制 app 和 api 的长度为 16 个字符
-
 #[tokio::main]
 async fn main() -> Result<()> {
     CONTEXT.get_or_init(init).await;
@@ -47,6 +42,7 @@ async fn main() -> Result<()> {
         );
 
     // 数据库同步任务
+    // Database synchronization task
     tokio::spawn(async {
         db_sync().await;
     });
