@@ -2,35 +2,47 @@
 
 ## 目的
 
-收集 Api 调用次数, 以便于分析 Api 调用情况, 以及优化 Api 调用
+统计调用次数
 
 ## 理念
 
 -   轻量化
--   独立任务线程操作数据库
+-   持久化数据
 -   单文件部署
 
-## 基准测试
-
 ## 部署
+
+## 接口
+
+### 添加 App
+
+### 添加 Api
+
+### 添加 Api 调用记录
+
+### 获取 Api 调用记录
+
+### 获取 App 下所有 Api 调用记录
 
 ## 设置
 
 默认配置
 
 ```toml
-#名称 将显示在日志中
+#名称
 server_name = "apirec"
-#server 监听地址
-server_url = "0.0.0.0:3006"
-#日志目录
-log_dir = "logs"
-#数据库文件名
-log_temp_size = "100MB"
+#服务端口
+port = 3006
 #日志级别
 log_level = "info"
+#日志分割 day, hour, minute
+log_split = "day"
+#同步间隔
+sync_interval = 30
 
 ```
+
+## 基准测试
 
 ## 感谢
 

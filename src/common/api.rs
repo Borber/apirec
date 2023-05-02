@@ -69,24 +69,23 @@ impl AllApi {
     pub fn get_sum(&self, app: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count_api = count_api.read();
-        let mut sum = 0;
-        for count in count_api.values() {
-            sum += count.load(Ordering::SeqCst);
-        }
-        sum
+
+        count_api
+            .values()
+            .map(|count| count.load(Ordering::SeqCst))
+            .sum()
     }
 
     /// 获取 app 的所有 api 的调用次数
     /// Get the number of calls to all apis in the app
     pub fn get_apis(&self, app: &str) -> HashMap<String, i64> {
         let count_api = { self.map.read().get(app).unwrap().clone() };
+        let count_api = count_api.read();
 
-        let x = count_api
-            .read()
+        count_api
             .iter()
             .map(|(api, count)| (api.to_owned(), count.load(Ordering::SeqCst)))
-            .collect();
-        x
+            .collect()
     }
 }
 
@@ -128,14 +127,11 @@ impl WaitApi {
     /// 获取所有需要添加的 api 并清空 map
     /// Get all the apis that need to be added and clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
-        let mut map = HashMap::new();
-        {
-            let apps = { self.map.write().drain().collect::<HashMap<_, _>>() };
-            for (app, apis) in apps.iter() {
-                let apis = { apis.read().clone() };
-                map.insert(app.to_owned(), apis);
-            }
-        }
-        map
+        let apps: HashMap<String, NewApi> = { self.map.write().drain().collect() };
+
+        // 上面代码的迭代器写法
+        apps.into_iter()
+            .map(|(app, apis)| (app, apis.read().clone()))
+            .collect()
     }
 }
