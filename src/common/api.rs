@@ -8,7 +8,7 @@ use parking_lot::RwLock;
 
 /// 记录某app下所有api的调用次数
 /// Record the number of calls to all apis under a certain app
-type CountApi = Arc<RwLock<HashMap<String, Arc<AtomicI64>>>>;
+pub type CountApi = Arc<RwLock<HashMap<String, Arc<AtomicI64>>>>;
 
 /// 记录所有app的api调用次数
 /// Record the number of calls to all apis of all apps
@@ -35,15 +35,17 @@ impl AllApi {
     /// Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
         let count_api = { self.map.read().get(app).unwrap().clone() };
-        let mut count_api = count_api.write();
-        count_api.insert(api.to_owned(), Arc::new(AtomicI64::new(0)));
+        count_api
+            .write()
+            .insert(api.to_owned(), Arc::new(AtomicI64::new(0)));
     }
 
     /// 添加 app
     /// Add a new app
     pub fn add_app(&self, app: &str) {
-        let mut apps = self.map.write();
-        apps.insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
+        self.map
+            .write()
+            .insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
     }
 
     /// 获取 api 的调用次数
@@ -113,25 +115,24 @@ impl WaitApi {
             self.add_app(app);
         }
         let apis = { self.map.read().get(app).unwrap().clone() };
-        let mut apis = apis.write();
-        apis.insert(api.to_owned());
+        apis.write().insert(api.to_owned());
     }
 
     /// 添加一个 app
     /// Add a new app
     fn add_app(&self, app: &str) {
-        let mut apps = self.map.write();
-        apps.insert(app.to_owned(), Arc::new(RwLock::new(HashSet::new())));
+        self.map
+            .write()
+            .insert(app.to_owned(), Arc::new(RwLock::new(HashSet::new())));
     }
 
-    /// 获取所有需要添加的 api 并清空 map
+    /// 获取所有需要添加的 api
     /// Get all the apis that need to be added and clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
         let apps: HashMap<String, NewApi> = { self.map.write().drain().collect() };
 
-        // 上面代码的迭代器写法
         apps.into_iter()
-            .map(|(app, apis)| (app, apis.read().clone()))
+            .map(|(app, apis)| (app, apis.write().drain().collect()))
             .collect()
     }
 }
