@@ -43,6 +43,8 @@ impl WaitApp {
     /// 获取所有需要新增的 App
     /// Get all Apps that need to be added
     pub fn get_all(&self) -> HashSet<String> {
-        self.set.write().drain().collect()
+        let mut set = HashSet::new();
+        std::mem::swap(&mut set, &mut self.set.write());
+        set
     }
 }

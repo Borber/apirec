@@ -129,10 +129,15 @@ impl WaitApi {
     /// 获取所有需要添加的 api
     /// Get all the apis that need to be added and clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
-        let apps: HashMap<String, NewApi> = { self.map.write().drain().collect() };
+        let mut apps: HashMap<String, NewApi> = HashMap::new();
+        std::mem::swap(&mut apps, &mut self.map.write());
 
         apps.into_iter()
-            .map(|(app, apis)| (app, apis.write().drain().collect()))
+            .map(|(app, apis)| {
+                let mut apis_set = HashSet::new();
+                std::mem::swap(&mut apis_set, &mut apis.write());
+                (app, apis_set)
+            })
             .collect()
     }
 }

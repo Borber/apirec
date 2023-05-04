@@ -66,21 +66,22 @@ impl WaitRecord {
     /// Get all records that need to be added and clear the map
     pub fn get_records(&self) -> HashMap<String, HashMap<String, HashMap<i64, i64>>> {
         let mut map = HashMap::new();
-        {
-            let apps: HashMap<String, RecordApi> = { self.map.write().drain().collect() };
-            for (app, record_api) in apps.into_iter() {
-                let mut apis = HashMap::new();
-                let record_api: HashMap<String, Record> = record_api.write().drain().collect();
-                for (api, record) in record_api.into_iter() {
-                    let mut times = HashMap::new();
-                    let record: HashMap<i64, Arc<AtomicI64>> = record.write().drain().collect();
-                    for (time, count) in record.into_iter() {
-                        times.insert(time, count.load(Ordering::SeqCst));
-                    }
-                    apis.insert(api, times);
+        let mut apps: HashMap<String, RecordApi> = HashMap::new();
+        std::mem::swap(&mut apps, &mut self.map.write());
+        for (app, app_record) in apps.into_iter() {
+            let mut apis = HashMap::new();
+            let mut app_record_map: HashMap<String, Record> = HashMap::new();
+            std::mem::swap(&mut app_record_map, &mut app_record.write());
+            for (api, api_record) in app_record_map {
+                let mut times = HashMap::new();
+                let mut api_record_map: HashMap<i64, Arc<AtomicI64>> = HashMap::new();
+                std::mem::swap(&mut api_record_map, &mut api_record.write());
+                for (time, count) in api_record_map {
+                    times.insert(time, count.load(Ordering::SeqCst));
                 }
-                map.insert(app, apis);
+                apis.insert(api, times);
             }
+            map.insert(app, apis);
         }
         map
     }

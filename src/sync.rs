@@ -17,7 +17,7 @@ pub async fn db_sync() {
 
         // 获取需要新增的 app
         // Get new app
-        let wait_app = { context!().wait_app.get_all() };
+        let wait_app = context!().wait_app.get_all();
 
         // 添加 app, 建立相关表
         // Add app, build related tables
@@ -30,7 +30,7 @@ pub async fn db_sync() {
 
         // 获取需要新增的api
         // Get new api
-        let wait_api = { context!().wait_api.get_apis() };
+        let wait_api = context!().wait_api.get_apis();
 
         // 添加 api, 建立相关表
         // Add api, build related tables
@@ -45,7 +45,7 @@ pub async fn db_sync() {
 
         // 获取需要新增的记录
         // Get new record
-        let wait_record = { context!().wait_record.get_records() };
+        let wait_record = context!().wait_record.get_records();
         if !wait_record.is_empty() {
             info!("wait_record: {:?}", wait_record);
 
