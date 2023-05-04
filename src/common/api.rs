@@ -49,7 +49,7 @@ impl AllApi {
     }
 
     /// 获取 api 的调用次数
-    /// Get the number of calls to the api
+    /// Get the number of calls of the api
     pub fn get_api(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
@@ -57,7 +57,7 @@ impl AllApi {
     }
 
     /// 检测 api 是否存在
-    /// Check if the app and api exist
+    /// Check if the api exists
     pub fn check_api(&self, app: &str, api: &str) -> bool {
         let flag = { self.map.read().contains_key(app) };
         if !flag {
@@ -67,7 +67,7 @@ impl AllApi {
     }
 
     /// 获取 app 总调用次数
-    /// Get the total number of calls to the app
+    /// Get the number of calls to all apis in the app
     pub fn get_sum(&self, app: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count_api = count_api.read();
@@ -96,7 +96,7 @@ impl AllApi {
 type NewApi = Arc<RwLock<HashSet<String>>>;
 
 /// 等待新增的api
-/// Waiting for the new api to be added
+/// The api that needs to be added
 pub struct WaitApi {
     map: Arc<RwLock<HashMap<String, NewApi>>>,
 }
