@@ -1,3 +1,5 @@
+use std::println;
+
 use crate::pool;
 
 /// 更新app表中的api调用次数
@@ -19,15 +21,10 @@ pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
     let api_e = base58_monero::encode(api.as_bytes()).unwrap();
     let sql = format!(
-        r#"insert into "{}_{}" (time, count) values (?, ?)"#,
-        app_e, api_e
+        r#"insert into "{}_{}" (time, count) values ({}, {}) on conflict(time) do update set count = count + {}"#,
+        app_e, api_e, time, count, count
     );
-    sqlx::query(&sql)
-        .bind(time)
-        .bind(count)
-        .execute(pool!())
-        .await
-        .unwrap();
+    sqlx::query(&sql).execute(pool!()).await.unwrap();
 }
 
 /// 新建 api 表
