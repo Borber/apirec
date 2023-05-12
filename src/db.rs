@@ -1,5 +1,3 @@
-use std::println;
-
 use crate::pool;
 
 /// 更新app表中的api调用次数
