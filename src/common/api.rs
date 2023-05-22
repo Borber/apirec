@@ -1,8 +1,6 @@
+use hashbrown::{HashMap, HashSet};
 use std::sync::atomic::{AtomicI64, Ordering};
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 use parking_lot::RwLock;
 
@@ -144,15 +142,10 @@ impl WaitApi {
     ///
     /// Get all the apis that need to be added and clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
-        let mut apps: HashMap<String, NewApi> = HashMap::new();
-        std::mem::swap(&mut apps, &mut self.map.write());
+        let apps = std::mem::take(&mut *self.map.write());
 
         apps.into_iter()
-            .map(|(app, apis)| {
-                let mut apis_set = HashSet::new();
-                std::mem::swap(&mut apis_set, &mut apis.write());
-                (app, apis_set)
-            })
+            .map(|(app, apis)| (app, std::mem::take(&mut *apis.write())))
             .collect()
     }
 }

@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     sync::{
         atomic::{AtomicI64, Ordering},
         Arc,
@@ -7,6 +6,7 @@ use std::{
     time::UNIX_EPOCH,
 };
 
+use hashbrown::HashMap;
 use parking_lot::RwLock;
 
 type Record = Arc<RwLock<HashMap<i64, Arc<AtomicI64>>>>;
@@ -69,16 +69,13 @@ impl WaitRecord {
     /// Get all records that need to be added and clear the map
     pub fn get_records(&self) -> HashMap<String, HashMap<String, HashMap<i64, i64>>> {
         let mut map = HashMap::new();
-        let mut apps: HashMap<String, RecordApi> = HashMap::new();
-        std::mem::swap(&mut apps, &mut self.map.write());
+        let apps = std::mem::take(&mut *self.map.write());
         for (app, app_record) in apps.into_iter() {
             let mut apis = HashMap::new();
-            let mut app_record_map: HashMap<String, Record> = HashMap::new();
-            std::mem::swap(&mut app_record_map, &mut app_record.write());
+            let app_record_map = std::mem::take(&mut *app_record.write());
             for (api, api_record) in app_record_map {
                 let mut times = HashMap::new();
-                let mut api_record_map: HashMap<i64, Arc<AtomicI64>> = HashMap::new();
-                std::mem::swap(&mut api_record_map, &mut api_record.write());
+                let api_record_map = std::mem::take(&mut *api_record.write());
                 for (time, count) in api_record_map {
                     times.insert(time, count.load(Ordering::SeqCst));
                 }

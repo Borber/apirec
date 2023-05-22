@@ -1,4 +1,5 @@
-use std::{collections::HashMap, time::Duration};
+use hashbrown::HashMap;
+use std::time::Duration;
 
 use tracing::info;
 

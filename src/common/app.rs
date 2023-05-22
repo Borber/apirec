@@ -1,4 +1,5 @@
-use std::{collections::HashSet, sync::Arc};
+use hashbrown::HashSet;
+use std::sync::Arc;
 
 use parking_lot::RwLock;
 
@@ -49,8 +50,6 @@ impl WaitApp {
     ///
     /// Get all Apps that need to be added
     pub fn get_all(&self) -> HashSet<String> {
-        let mut set = HashSet::new();
-        std::mem::swap(&mut set, &mut self.set.write());
-        set
+        std::mem::take(&mut *self.set.write())
     }
 }

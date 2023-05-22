@@ -2,11 +2,9 @@ pub mod api;
 pub mod app;
 pub mod record;
 
-use std::{
-    collections::{HashMap, HashSet},
-    sync::{atomic::AtomicI64, Arc},
-};
+use std::sync::{atomic::AtomicI64, Arc};
 
+use hashbrown::{HashMap, HashSet};
 use parking_lot::RwLock;
 use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
 use tokio::sync::OnceCell;

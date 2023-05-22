@@ -39,6 +39,7 @@ dependencies = [
  "axum-extra",
  "base58-monero",
  "futures",
+ "hashbrown 0.13.2",
  "once_cell",
  "openssl",
  "parking_lot",

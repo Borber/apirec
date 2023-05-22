@@ -40,8 +40,8 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
             // 除非特别指定, 否则默认按从大到小顺序
             // Unless specified, the default is in descending order
             match dto.sort {
-                Some(false) => apis.sort_by(|a, b| b.count.cmp(&a.count)),
-                _ => apis.sort_by(|a, b| a.count.cmp(&b.count)),
+                Some(false) => apis.sort_by(|a, b| a.count.cmp(&b.count)),
+                _ => apis.sort_by(|a, b| b.count.cmp(&a.count)),
             }
 
             // 返回部分结果
