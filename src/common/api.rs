@@ -7,10 +7,12 @@ use std::{
 use parking_lot::RwLock;
 
 /// 记录某app下所有api的调用次数
+///
 /// Record the number of calls to all apis under a certain app
 pub type CountApi = Arc<RwLock<HashMap<String, Arc<AtomicI64>>>>;
 
 /// 记录所有app的api调用次数
+///
 /// Record the number of calls to all apis of all apps
 pub struct AllApi {
     map: Arc<RwLock<HashMap<String, CountApi>>>,
@@ -24,6 +26,7 @@ impl AllApi {
     }
 
     /// 将 api 的调用次数加一
+    ///
     /// Add one to the number of calls to the api
     pub fn update(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
@@ -32,6 +35,7 @@ impl AllApi {
     }
 
     /// 添加一个 api
+    ///
     /// Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
         let count_api = { self.map.read().get(app).unwrap().clone() };
@@ -41,6 +45,7 @@ impl AllApi {
     }
 
     /// 添加 app
+    ///
     /// Add a new app
     pub fn add_app(&self, app: &str) {
         self.map
@@ -49,6 +54,7 @@ impl AllApi {
     }
 
     /// 获取 api 的调用次数
+    ///
     /// Get the number of calls of the api
     pub fn get_api(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
@@ -57,6 +63,7 @@ impl AllApi {
     }
 
     /// 检测 api 是否存在
+    ///
     /// Check if the api exists
     pub fn check_api(&self, app: &str, api: &str) -> bool {
         let flag = { self.map.read().contains_key(app) };
@@ -67,6 +74,7 @@ impl AllApi {
     }
 
     /// 获取 app 总调用次数
+    ///
     /// Get the number of calls to all apis in the app
     pub fn get_sum(&self, app: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
@@ -79,6 +87,7 @@ impl AllApi {
     }
 
     /// 获取 app 的所有 api 的调用次数
+    ///
     /// Get the number of calls to all apis in the app
     pub fn get_apis(&self, app: &str) -> HashMap<String, i64> {
         let count_api = { self.map.read().get(app).unwrap().clone() };
@@ -92,10 +101,12 @@ impl AllApi {
 }
 
 /// 记录需要新增的 api
+///
 /// Record the api that needs to be added
 type NewApi = Arc<RwLock<HashSet<String>>>;
 
 /// 等待新增的api
+///
 /// The api that needs to be added
 pub struct WaitApi {
     map: Arc<RwLock<HashMap<String, NewApi>>>,
@@ -107,7 +118,18 @@ impl WaitApi {
             map: Arc::new(RwLock::new(map)),
         }
     }
+
+    /// 添加一个 app
+    ///
+    /// Add a new app
+    fn add_app(&self, app: &str) {
+        self.map
+            .write()
+            .insert(app.to_owned(), Arc::new(RwLock::new(HashSet::new())));
+    }
+
     /// 添加一个 api
+    ///
     /// Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
         let flag = { self.map.read().contains_key(app) };
@@ -118,15 +140,8 @@ impl WaitApi {
         apis.write().insert(api.to_owned());
     }
 
-    /// 添加一个 app
-    /// Add a new app
-    fn add_app(&self, app: &str) {
-        self.map
-            .write()
-            .insert(app.to_owned(), Arc::new(RwLock::new(HashSet::new())));
-    }
-
     /// 获取所有需要添加的 api
+    ///
     /// Get all the apis that need to be added and clear the map
     pub fn get_apis(&self) -> HashMap<String, HashSet<String>> {
         let mut apps: HashMap<String, NewApi> = HashMap::new();

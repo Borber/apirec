@@ -16,6 +16,7 @@ use crate::{
 };
 
 /// 获取 app 的访问量
+///
 /// Get app access count
 pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
     // 检测 app 是否存在
@@ -75,6 +76,7 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
 }
 
 /// 新增 app
+///
 /// Add app
 pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     // 检测 app name 是否合法

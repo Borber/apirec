@@ -5,6 +5,7 @@ use tracing_subscriber::{
 };
 
 /// 初始化日志模块
+///
 /// Initialize log module
 #[macro_export]
 macro_rules! init_log {

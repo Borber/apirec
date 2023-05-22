@@ -13,6 +13,7 @@ use crate::{
 };
 
 /// 新增 Api
+///
 /// Add Api
 pub async fn add(
     Path(app): Path<String>,
@@ -43,8 +44,8 @@ pub async fn add(
 
     tokio::spawn(async move {
         // 将新增 api 添加到 apis内存对象中优先提供计数功能
-        // Add the new api to the apis memory object to provide the count function first
         // 此处保证 api 存在时 app 必定存在 即, 当 app 不存在时 api 一定不存在
+        // Add the new api to the apis memory object to provide the count function first
         // Here to ensure that when the api exists, the app must exist, that is, when the app does not exist, the api must not exist
         context!().apis.add_api(&app, &api);
 
@@ -57,6 +58,7 @@ pub async fn add(
 }
 
 /// 获取 api 访问数量
+///
 /// Get api access count
 pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     // 检测 app 是否存在
@@ -75,6 +77,7 @@ pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
 }
 
 /// 新增记录
+///
 /// Add record
 pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     // 检测 app 是否存在

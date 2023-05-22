@@ -1,4 +1,5 @@
 /// 名称合法性检测
+///
 /// Name validity check
 pub fn is_valid(name: &str) -> bool {
     // 名称长度需要在 1 到 16 之间

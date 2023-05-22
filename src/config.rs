@@ -6,22 +6,28 @@ use serde::{Deserialize, Serialize};
 pub static CONFIG: Lazy<ApplicationConfig> = Lazy::new(ApplicationConfig::default);
 
 /// 配置
+///
 /// Configuration
 #[derive(Deserialize)]
 pub struct ConfigFile {
     /// 服务名称
+    ///
     /// Service name
     pub server_name: Option<String>,
     /// 服务端口
+    ///
     /// Service port
     pub port: Option<u16>,
     /// 日志级别
+    ///
     /// Log level
     pub log_level: Option<String>,
     /// 日志分割
+    ///
     /// Log split
     pub log_split: Option<String>,
     /// 同步间隔
+    ///
     /// Synchronization interval
     pub sync_interval: Option<u64>,
 }
@@ -31,21 +37,27 @@ pub struct ConfigFile {
 #[derive(Debug, Clone, Serialize)]
 pub struct ApplicationConfig {
     /// 服务名称
+    ///
     /// Service name
     pub server_name: String,
     /// 服务地址
+    ///
     /// Service address
     pub server_url: String,
     /// 日志级别
+    ///
     /// Log level
     pub log_level: String,
     /// 日志分割
+    ///
     /// Log split
     pub log_split: String,
     /// 可执行文件目录
+    ///
     /// Executable file directory
     pub exe_dir: PathBuf,
     /// 同步间隔
+    ///
     /// Synchronization interval
     pub sync_interval: u64,
 }

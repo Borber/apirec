@@ -1,6 +1,7 @@
 use crate::pool;
 
 /// 更新app表中的api调用次数
+///
 /// Update the number of api calls in the app table
 pub async fn update_count(app: &str, api: &str, count: &i64) {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
@@ -14,6 +15,7 @@ pub async fn update_count(app: &str, api: &str, count: &i64) {
 }
 
 /// 新增记录
+///
 /// Add a record
 pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
@@ -26,6 +28,7 @@ pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
 }
 
 /// 新建 api 表
+///
 /// Make a new api table
 pub async fn make_api_table(app: &str, api: &str) {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();
@@ -50,6 +53,7 @@ pub async fn make_api_table(app: &str, api: &str) {
 }
 
 /// 新建 app 表
+///
 /// Make a new app table
 pub async fn make_app_table(app: &str) -> bool {
     let app_e = base58_monero::encode(app.as_bytes()).unwrap();

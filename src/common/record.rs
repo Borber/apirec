@@ -14,6 +14,7 @@ type Record = Arc<RwLock<HashMap<i64, Arc<AtomicI64>>>>;
 type RecordApi = Arc<RwLock<HashMap<String, Record>>>;
 
 /// 等待新增的记录
+///
 /// Waiting for new records to be added
 pub struct WaitRecord {
     map: Arc<RwLock<HashMap<String, RecordApi>>>,
@@ -27,6 +28,7 @@ impl WaitRecord {
     }
 
     /// 添加记录
+    ///
     /// Add record
     pub fn add(&self, app: &str, api: &str) {
         // 若 app 不存在, 则添加 app
@@ -63,6 +65,7 @@ impl WaitRecord {
     }
 
     /// 获取所有需要添加的记录并清空 map
+    ///
     /// Get all records that need to be added and clear the map
     pub fn get_records(&self) -> HashMap<String, HashMap<String, HashMap<i64, i64>>> {
         let mut map = HashMap::new();

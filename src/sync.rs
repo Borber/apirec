@@ -9,6 +9,7 @@ use crate::{
 };
 
 /// 数据库同步
+///
 /// Database sync
 pub async fn db_sync() {
     info!("Database sync task started");

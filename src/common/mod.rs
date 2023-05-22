@@ -117,26 +117,32 @@ pub async fn init() -> ServiceContext {
 
 pub struct ServiceContext {
     /// 记录所有已经存在的app
+    ///
     /// Record all existing apps
     pub apps: AllApp,
 
     /// 数据库连接池
+    ///
     /// Database connection pool
     pub pool: Pool<Sqlite>,
 
     /// 记录总调用次数
+    ///
     /// Record the total number of calls
     pub apis: AllApi,
 
     /// 等待新增的app
+    ///
     /// Waiting for the new app to be added
     pub wait_app: WaitApp,
 
     /// 等待新增的api
+    ///
     /// Waiting for the new api to be added
     pub wait_api: WaitApi,
 
     /// 等待新增的记录
+    ///
     /// Waiting for new records to be added
     pub wait_record: WaitRecord,
 }
