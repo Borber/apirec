@@ -9,7 +9,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tracing::info;
 
 use crate::{
-    controller::{api as ApiController, app as AppController},
+    controller::{api as Api, app as App},
     sync::db_sync,
 };
 
@@ -31,15 +31,9 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .route("/api", post(AppController::add))
-        .route(
-            "/api/:app",
-            get(AppController::get).post(ApiController::add),
-        )
-        .route(
-            "/api/:app/:api",
-            get(ApiController::get).post(ApiController::post),
-        )
+        .route("/api", post(App::add))
+        .route("/api/:app", get(App::get).post(Api::add))
+        .route("/api/:app/:api", get(Api::get).post(Api::post))
         .layer(
             CorsLayer::new()
                 .allow_origin(Any)

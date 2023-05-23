@@ -1,3 +1,4 @@
+use hashbrown::HashSet;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -26,5 +27,5 @@ pub struct GetAppDTO {
     /// 指定 app 下的 api
     ///
     /// Specify the api under the app
-    pub apis: Option<Vec<String>>,
+    pub apis: Option<HashSet<String>>,
 }
