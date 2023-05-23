@@ -64,11 +64,8 @@ impl AllApi {
     ///
     /// Check if the api exists
     pub fn check_api(&self, app: &str, api: &str) -> bool {
-        let flag = { self.map.read().contains_key(app) };
-        if !flag {
-            return false;
-        }
-        self.map.read().get(app).unwrap().read().contains_key(api)
+        self.map.read().contains_key(app)
+            && self.map.read().get(app).unwrap().read().contains_key(api)
     }
 
     /// 获取 app 总调用次数
@@ -130,8 +127,7 @@ impl WaitApi {
     ///
     /// Add a new api
     pub fn add_api(&self, app: &str, api: &str) {
-        let flag = { self.map.read().contains_key(app) };
-        if !flag {
+        if !self.map.read().contains_key(app) {
             self.add_app(app);
         }
         let apis = { self.map.read().get(app).unwrap().clone() };

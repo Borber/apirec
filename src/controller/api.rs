@@ -27,16 +27,13 @@ pub async fn add(
 
     // 检测 app 是否存在
     // Check if app exists
-    let flag = context!().apps.check_app(&app);
-    if !flag {
+    if !context!().apps.check_app(&app) {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     }
 
     // 检测 api 是否已经存在
     // Check if api already exists
-    let flag = context!().apis.check_api(&app, &api);
-
-    if flag {
+    if context!().apis.check_api(&app, &api) {
         return Json(RespVO::fail(1003, "Api already exists".to_owned()));
     }
 
@@ -63,14 +60,12 @@ pub async fn add(
 pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     // 检测 app 是否存在
     // Check if app exists
-    let flag = context!().apps.check_app(&app);
-    if !flag {
+    if !context!().apps.check_app(&app) {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     };
     // 检测 api 是否存在
     // Check if api exists
-    let flag = context!().apis.check_api(&app, &api);
-    if !flag {
+    if !context!().apis.check_api(&app, &api) {
         return Json(RespVO::fail(1004, "Api not found".to_owned()));
     };
     Json(Ok(context!().apis.get_api(&app, &api)).into())
@@ -82,15 +77,13 @@ pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
 pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     // 检测 app 是否存在
     // Check if app exists
-    let flag = context!().apps.check_app(&app);
-    if !flag {
+    if !context!().apps.check_app(&app) {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     };
 
     // 检测 api 是否存在
     // Check if api exists
-    let flag = context!().apis.check_api(&app, &api);
-    if !flag {
+    if !context!().apis.check_api(&app, &api) {
         return Json(RespVO::fail(1004, "Api not found".to_owned()));
     };
 

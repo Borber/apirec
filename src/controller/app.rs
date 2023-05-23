@@ -21,8 +21,7 @@ use crate::{
 pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
     // 检测 app 是否存在
     // Check if app exists
-    let flag = context!().apps.check_app(&app);
-    if !flag {
+    if !context!().apps.check_app(&app) {
         return Json(RespVO::fail(1002, "App not found".to_owned()));
     }
     match body {
@@ -85,17 +84,18 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
         return Json(RespVO::fail(1006, "App name is not valid".to_owned()));
     };
 
-    let flag = context!().apps.check_app(&app);
-
-    if flag {
+    if context!().apps.check_app(&app) {
         return Json(RespVO::fail(1003, "App already exists".to_owned()));
     }
 
     info!("Add app: {}", app);
 
     tokio::spawn(async move {
+        // 新增 app
+        // Add app
         context!().apps.add(&app);
-
+        // 将新增 app 添加到等待新增的 app 中
+        // Add the new app to the app to be added
         context!().wait_app.add(&app);
         // 将新增 app 添加到 apis 内存对象中优先提供计数功能, 并保证 新增 api 时 app 存在
         // Add the new app to the apis memory object to provide the count function first, and ensure that the new api exists when the app exists
