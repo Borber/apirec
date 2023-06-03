@@ -1,11 +1,7 @@
 use anyhow::{Ok, Result};
-use axum::{
-    routing::{get, post},
-    Router,
-};
 use common::{init, CONTEXT};
 use config::CONFIG;
-use tower_http::cors::{Any, CorsLayer};
+use ntex::web;
 use tracing::info;
 
 use crate::{
@@ -17,29 +13,16 @@ mod common;
 mod config;
 mod controller;
 mod db;
-mod handler;
 mod log;
 mod model;
 mod sync;
 mod util;
 
-#[tokio::main]
+#[ntex::main]
 async fn main() -> Result<()> {
     CONTEXT.get_or_init(init).await;
 
     init_log!();
-
-    let app = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
-        .route("/api", post(App::add))
-        .route("/api/:app", get(App::get).post(Api::add))
-        .route("/api/:app/:api", get(Api::get).post(Api::post))
-        .layer(
-            CorsLayer::new()
-                .allow_origin(Any)
-                .allow_methods(Any)
-                .allow_headers(Any),
-        );
 
     // 数据库同步任务
     // Database synchronization task
@@ -48,9 +31,16 @@ async fn main() -> Result<()> {
     });
 
     info!("Server started at {}", CONFIG.server_url);
-    axum::Server::bind(&CONFIG.server_url.parse().unwrap())
-        .serve(app.into_make_service())
-        .await?;
-
+    web::HttpServer::new(|| {
+        web::App::new()
+            .service(App::add)
+            .service(App::get)
+            .service(Api::add)
+            .service(Api::get)
+            .service(Api::post)
+    })
+    .bind(("0.0.0.0", 8000))?
+    .run()
+    .await?;
     Ok(())
 }

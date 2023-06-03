@@ -1,15 +1,17 @@
 use anyhow::Ok;
-use axum::extract::Path;
+use ntex::web::{
+    self,
+    types::{Json, Path},
+};
 use tracing::info;
 
 use crate::{
     context,
-    handler::Json,
     model::{
         dto::{AddAppDTO, GetAppDTO},
         vo::{
             app::{ApiCount, GetAppVO},
-            Resp, RespVO,
+            Resp,
         },
     },
     util,
@@ -18,15 +20,16 @@ use crate::{
 /// 获取 app 的访问量
 ///
 /// Get app access count
-pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
+#[web::get("/api/{app}")]
+pub async fn get(uri: Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
     // 检测 app 是否存在
     // Check if app exists
-    if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+    if !context!().apps.check_app(&uri) {
+        return Resp::fail(1002, "App not found".to_owned());
     }
     match body {
         Some(Json(dto)) => {
-            let apis = context!().apis.get_apis(&app);
+            let apis = context!().apis.get_apis(&uri);
             let total: i64 = apis.values().sum();
 
             // 将 apis 转换为 ApiCount 结构体, 以便排序
@@ -56,36 +59,33 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
                 },
             };
 
-            Json(
-                Ok(GetAppVO {
-                    total,
-                    apis: Some(apis),
-                })
-                .into(),
-            )
-        }
-        None => Json(
             Ok(GetAppVO {
-                total: context!().apis.get_sum(&app),
-                apis: None,
+                total,
+                apis: Some(apis),
             })
-            .into(),
-        ),
+            .into()
+        }
+        None => Ok(GetAppVO {
+            total: context!().apis.get_sum(&uri),
+            apis: None,
+        })
+        .into(),
     }
 }
 
 /// 新增 app
 ///
 /// Add app
+#[web::post("/api")]
 pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     // 检测 app name 是否合法
     // Check if app name is valid
     if !util::is_valid(&app) {
-        return Json(RespVO::fail(1006, "App name is not valid".to_owned()));
+        return Resp::fail(1006, "App name is not valid".to_owned());
     };
 
     if context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1003, "App already exists".to_owned()));
+        return Resp::fail(1003, "App already exists".to_owned());
     }
 
     info!("Add app: {}", app);
@@ -102,5 +102,5 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
         context!().apis.add_app(&app);
     });
 
-    Json(Ok("Success".to_owned()).into())
+    Ok("Success".to_owned()).into()
 }
