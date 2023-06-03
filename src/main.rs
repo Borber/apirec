@@ -1,12 +1,14 @@
 use anyhow::{Ok, Result};
-use axum::{
-    routing::{get, post},
-    Router,
+
+use salvo::{
+    cors::{Any, Cors},
+    hyper::Method,
+    prelude::*,
 };
+use tracing::info;
+
 use common::{init, CONTEXT};
 use config::CONFIG;
-use tower_http::cors::{Any, CorsLayer};
-use tracing::info;
 
 use crate::{
     controller::{api as Api, app as App},
@@ -17,7 +19,6 @@ mod common;
 mod config;
 mod controller;
 mod db;
-mod handler;
 mod log;
 mod model;
 mod sync;
@@ -29,17 +30,17 @@ async fn main() -> Result<()> {
 
     init_log!();
 
-    let app = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
-        .route("/api", post(App::add))
-        .route("/api/:app", get(App::get).post(Api::add))
-        .route("/api/:app/:api", get(Api::get).post(Api::post))
-        .layer(
-            CorsLayer::new()
-                .allow_origin(Any)
-                .allow_methods(Any)
-                .allow_headers(Any),
-        );
+    let cors = Cors::new()
+        .allow_origin(Any)
+        .allow_methods(vec![Method::GET, Method::POST])
+        .into_handler();
+
+    let router = Router::with_path("api").hoop(cors).post(App::add).push(
+        Router::with_path("<app>")
+            .get(App::get)
+            .post(Api::add)
+            .push(Router::with_path("<api>").get(Api::get).post(Api::post)),
+    );
 
     // 数据库同步任务
     // Database synchronization task
@@ -48,9 +49,9 @@ async fn main() -> Result<()> {
     });
 
     info!("Server started at {}", CONFIG.server_url);
-    axum::Server::bind(&CONFIG.server_url.parse().unwrap())
-        .serve(app.into_make_service())
-        .await?;
+
+    let acceptor = TcpListener::new(&CONFIG.server_url).bind().await;
+    Server::new(acceptor).serve(router).await;
 
     Ok(())
 }

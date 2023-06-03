@@ -1,40 +1,48 @@
-use anyhow::Ok;
-use axum::extract::Path;
+use salvo::{handler, writer::Json, Request, Response};
 use tracing::info;
 
 use crate::{
     context,
-    handler::Json,
-    model::{
-        dto::AddApiDTO,
-        vo::{Resp, RespVO},
-    },
+    model::{dto::AddApiDTO, vo::Resp},
     util,
 };
 
 /// 新增 Api
 ///
 /// Add Api
-pub async fn add(
-    Path(app): Path<String>,
-    Json(AddApiDTO { api }): Json<AddApiDTO>,
-) -> Resp<String> {
+#[handler]
+pub async fn add(req: &mut Request, res: &mut Response) {
+    let app = req.param::<String>("app").unwrap();
+    let AddApiDTO { api } = req.parse_json().await.unwrap();
+
     // 检测 api name 是否合法
     // Check if api name is valid
     if !util::is_valid(&api) {
-        return Json(RespVO::fail(1001, "Api name is not valid".to_owned()));
+        res.render(Json(Resp::<String>::fail(
+            1001,
+            "Api name is invalid".to_owned(),
+        )));
+        return;
     };
 
     // 检测 app 是否存在
     // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+        res.render(Json(Resp::<String>::fail(
+            1002,
+            "App does not exist".to_owned(),
+        )));
+        return;
     }
 
     // 检测 api 是否已经存在
     // Check if api already exists
     if context!().apis.check_api(&app, &api) {
-        return Json(RespVO::fail(1003, "Api already exists".to_owned()));
+        res.render(Json(Resp::<String>::fail(
+            1005,
+            "Api already exists".to_owned(),
+        )));
+        return;
     }
 
     info!("Add api: {} to app: {}", api, app);
@@ -50,41 +58,50 @@ pub async fn add(
         // Add the new api to wait api
         context!().wait_api.add_api(&app, &api);
     });
-
-    Json(RespVO::success("Success".to_owned()))
+    res.render(Json(Resp::success("Success".to_owned())));
 }
 
 /// 获取 api 访问数量
 ///
 /// Get api access count
-pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
+#[handler]
+pub async fn get(req: &mut Request, res: &mut Response) {
+    let app = req.param::<String>("app").unwrap();
+    let api = req.param::<String>("api").unwrap();
     // 检测 app 是否存在
     // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+        res.render(Json(Resp::<String>::fail(1002, "App not found".to_owned())));
+        return;
     };
     // 检测 api 是否存在
     // Check if api exists
     if !context!().apis.check_api(&app, &api) {
-        return Json(RespVO::fail(1004, "Api not found".to_owned()));
+        res.render(Json(Resp::<String>::fail(1004, "Api not found".to_owned())));
+        return;
     };
-    Json(Ok(context!().apis.get_api(&app, &api)).into())
+    res.render(Json(Resp::success(context!().apis.get_api(&app, &api))));
 }
 
 /// 新增记录
 ///
 /// Add record
-pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
+#[handler]
+pub async fn post(req: &mut Request, res: &mut Response) {
+    let app = req.param::<String>("app").unwrap();
+    let api = req.param::<String>("api").unwrap();
     // 检测 app 是否存在
     // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+        res.render(Json(Resp::<String>::fail(1002, "App not found".to_owned())));
+        return;
     };
 
     // 检测 api 是否存在
     // Check if api exists
     if !context!().apis.check_api(&app, &api) {
-        return Json(RespVO::fail(1004, "Api not found".to_owned()));
+        res.render(Json(Resp::<String>::fail(1004, "Api not found".to_owned())));
+        return;
     };
 
     let count = context!().apis.get_api(&app, &api) + 1;
@@ -98,6 +115,5 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
         // Add record
         context!().wait_record.add(&app, &api);
     });
-
-    Json(RespVO::success(count))
+    res.render(Json(Resp::success(count)));
 }

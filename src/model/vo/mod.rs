@@ -3,35 +3,31 @@ pub mod app;
 use anyhow::Result;
 use serde::Serialize;
 
-use crate::handler::Json;
-
-pub type Resp<T> = Json<RespVO<T>>;
-
 #[derive(Debug, Serialize, Clone)]
-pub struct RespVO<T> {
+pub struct Resp<T> {
     pub code: i64,
     pub msg: Option<String>,
     pub data: Option<T>,
 }
 
-impl<T> From<Result<T>> for RespVO<T>
+impl<T> From<Result<T>> for Resp<T>
 where
     T: Serialize,
 {
     fn from(item: Result<T>) -> Self {
         match item {
-            Ok(data) => RespVO::success(data),
-            Err(e) => RespVO::fail(1, e.to_string()),
+            Ok(data) => Resp::success(data),
+            Err(e) => Resp::fail(1, e.to_string()),
         }
     }
 }
 
-impl<T> RespVO<T>
+impl<T> Resp<T>
 where
     T: Serialize,
 {
     pub fn success(data: T) -> Self {
-        RespVO {
+        Resp {
             code: 0,
             msg: Some("success".to_string()),
             data: Some(data),
@@ -39,7 +35,7 @@ where
     }
 
     pub fn fail(code: i64, e: String) -> Self {
-        RespVO {
+        Resp {
             code,
             msg: Some(e),
             data: None,
