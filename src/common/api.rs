@@ -9,7 +9,7 @@ use parking_lot::RwLock;
 /// Record the number of calls to all apis under a certain app
 pub type CountApi = Arc<RwLock<HashMap<String, Arc<AtomicI64>>>>;
 
-/// 记录所有app的api调用次数
+/// 记录所有app
 ///
 /// Record the number of calls to all apis of all apps
 pub struct AllApi {

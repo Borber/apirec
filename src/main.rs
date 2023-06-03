@@ -1,7 +1,8 @@
 use anyhow::{Ok, Result};
 use common::{init, CONTEXT};
 use config::CONFIG;
-use ntex::web;
+use ntex::{http::Method, web};
+use ntex_cors::Cors;
 use tracing::info;
 
 use crate::{
@@ -33,6 +34,12 @@ async fn main() -> Result<()> {
     info!("Server started at {}", CONFIG.server_url);
     web::HttpServer::new(|| {
         web::App::new()
+            .wrap(
+                Cors::new()
+                    .allowed_methods(vec![Method::GET, Method::POST])
+                    .max_age(3600)
+                    .finish(),
+            )
             .service(App::add)
             .service(App::get)
             .service(Api::add)
