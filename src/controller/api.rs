@@ -4,11 +4,10 @@ use tracing::info;
 
 use crate::{
     context,
+    error::{API_ALREADY_EXISTS, API_NAME_IS_NO_VALID, API_NOT_FOUND, APP_NOT_FOUND},
     handler::Json,
-    model::{
-        dto::AddApiDTO,
-        vo::{Resp, RespVO},
-    },
+    model::dto::AddApiDTO,
+    resp::Resp,
     util,
 };
 
@@ -22,19 +21,19 @@ pub async fn add(
     // 检测 api name 是否合法
     // Check if api name is valid
     if !util::is_valid(&api) {
-        return Json(RespVO::fail(1001, "Api name is not valid".to_owned()));
+        return Resp::fail(API_NAME_IS_NO_VALID.0, API_NAME_IS_NO_VALID.1);
     };
 
     // 检测 app 是否存在
     // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+        return Resp::fail(APP_NOT_FOUND.0, APP_NOT_FOUND.1);
     }
 
     // 检测 api 是否已经存在
     // Check if api already exists
     if context!().apis.check_api(&app, &api) {
-        return Json(RespVO::fail(1003, "Api already exists".to_owned()));
+        return Resp::fail(API_ALREADY_EXISTS.0, API_ALREADY_EXISTS.1);
     }
 
     info!("Add api: {} to app: {}", api, app);
@@ -51,7 +50,7 @@ pub async fn add(
         context!().wait_api.add_api(&app, &api);
     });
 
-    Json(RespVO::success("Success".to_owned()))
+    Resp::success("Success".to_owned())
 }
 
 /// 获取 api 访问数量
@@ -61,14 +60,14 @@ pub async fn get(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     // 检测 app 是否存在
     // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+        return Resp::fail(APP_NOT_FOUND.0, APP_NOT_FOUND.1);
     };
     // 检测 api 是否存在
     // Check if api exists
     if !context!().apis.check_api(&app, &api) {
-        return Json(RespVO::fail(1004, "Api not found".to_owned()));
+        return Resp::fail(APP_NOT_FOUND.0, APP_NOT_FOUND.1);
     };
-    Json(Ok(context!().apis.get_api(&app, &api)).into())
+    Ok(context!().apis.get_api(&app, &api)).into()
 }
 
 /// 新增记录
@@ -78,13 +77,13 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
     // 检测 app 是否存在
     // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+        return Resp::fail(APP_NOT_FOUND.0, APP_NOT_FOUND.1);
     };
 
     // 检测 api 是否存在
     // Check if api exists
     if !context!().apis.check_api(&app, &api) {
-        return Json(RespVO::fail(1004, "Api not found".to_owned()));
+        return Resp::fail(API_NOT_FOUND.0, API_NOT_FOUND.1);
     };
 
     let count = context!().apis.get_api(&app, &api) + 1;
@@ -99,5 +98,5 @@ pub async fn post(Path((app, api)): Path<(String, String)>) -> Resp<i64> {
         context!().wait_record.add(&app, &api);
     });
 
-    Json(RespVO::success(count))
+    Resp::success(count)
 }

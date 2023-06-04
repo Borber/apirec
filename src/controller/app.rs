@@ -1,17 +1,15 @@
-use anyhow::Ok;
 use axum::extract::Path;
 use tracing::info;
 
 use crate::{
     context,
+    error::{APP_ALREADY_EXISTS, APP_NAME_IS_NO_VALID, APP_NOT_FOUND},
     handler::Json,
     model::{
         dto::{AddAppDTO, GetAppDTO},
-        vo::{
-            app::{ApiCount, GetAppVO},
-            Resp, RespVO,
-        },
+        vo::app::{ApiCount, GetAppVO},
     },
+    resp::Resp,
     util,
 };
 
@@ -22,7 +20,7 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
     // 检测 app 是否存在
     // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1002, "App not found".to_owned()));
+        return Resp::fail(APP_NOT_FOUND.0, APP_NOT_FOUND.1);
     }
     match body {
         Some(Json(dto)) => {
@@ -56,21 +54,15 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
                 },
             };
 
-            Json(
-                Ok(GetAppVO {
-                    total,
-                    apis: Some(apis),
-                })
-                .into(),
-            )
-        }
-        None => Json(
-            Ok(GetAppVO {
-                total: context!().apis.get_sum(&app),
-                apis: None,
+            Resp::success(GetAppVO {
+                total,
+                apis: Some(apis),
             })
-            .into(),
-        ),
+        }
+        None => Resp::success(GetAppVO {
+            total: context!().apis.get_sum(&app),
+            apis: None,
+        }),
     }
 }
 
@@ -81,11 +73,11 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     // 检测 app name 是否合法
     // Check if app name is valid
     if !util::is_valid(&app) {
-        return Json(RespVO::fail(1006, "App name is not valid".to_owned()));
+        return Resp::fail(APP_NAME_IS_NO_VALID.0, APP_NAME_IS_NO_VALID.1);
     };
 
     if context!().apps.check_app(&app) {
-        return Json(RespVO::fail(1003, "App already exists".to_owned()));
+        return Resp::fail(APP_ALREADY_EXISTS.0, APP_ALREADY_EXISTS.1);
     }
 
     info!("Add app: {}", app);
@@ -102,5 +94,5 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
         context!().apis.add_app(&app);
     });
 
-    Json(Ok("Success".to_owned()).into())
+    Resp::success("Add app success".to_owned())
 }

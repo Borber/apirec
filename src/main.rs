@@ -20,8 +20,10 @@ mod db;
 mod handler;
 mod log;
 mod model;
+mod resp;
 mod sync;
 mod util;
+mod error;
 
 #[tokio::main]
 async fn main() -> Result<()> {

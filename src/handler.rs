@@ -6,7 +6,7 @@ use axum::{
 };
 use serde::Serialize;
 
-use crate::model::vo::RespVO;
+use crate::resp::Resp;
 
 pub struct Json<T>(pub T);
 
@@ -26,7 +26,7 @@ where
     S: Send + Sync,
     B: Send + 'static,
 {
-    type Rejection = axum::Json<RespVO<()>>;
+    type Rejection = axum::Json<Resp<()>>;
 
     async fn from_request(req: Request<B>, state: &S) -> Result<Self, Self::Rejection> {
         match axum::Json::<T>::from_request(req, state).await {
@@ -39,9 +39,9 @@ where
                     JsonRejection::MissingJsonContentType(_) => "Missing json content type",
                     _ => "Unknown error",
                 };
-                Err(axum::Json(RespVO::fail(
-                    1,
-                    format!("{msg}: {}", rejection.body_text()),
+                Err(axum::Json(Resp::fail(
+                    1010,
+                    &format!("{msg}: {}", rejection.body_text()),
                 )))
             }
         }
