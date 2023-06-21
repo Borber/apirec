@@ -88,15 +88,15 @@ async fn lock_or_atomic() {
         let counter = Arc::clone(&counter4);
         let task = spawn(async move {
             for _ in 0..10000 {
-                counter.fetch_add(1, Ordering::SeqCst);
-                let _ = counter.load(Ordering::SeqCst);
+                counter.fetch_add(1, Ordering::Relaxed);
+                let _ = counter.load(Ordering::Relaxed);
             }
         });
         tasks.push(task);
     }
     futures::future::join_all(tasks).await;
     let elapsed4 = start.elapsed();
-    let counter4_value = counter4.load(Ordering::SeqCst);
+    let counter4_value = counter4.load(Ordering::Relaxed);
     // 输出结果
     println!("+----------------------+----------------------+----------------------+----------------------+");
     println!("| Lock type            | Counter value        | Elapsed time         | Throughput           |");

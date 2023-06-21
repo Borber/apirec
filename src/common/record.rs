@@ -57,7 +57,7 @@ impl WaitRecord {
         api.write()
             .entry(time)
             .and_modify(|e| {
-                e.fetch_add(1, Ordering::SeqCst);
+                e.fetch_add(1, Ordering::Relaxed);
             })
             .or_insert(Arc::new(AtomicI64::new(1)));
     }
@@ -75,7 +75,7 @@ impl WaitRecord {
                 let mut times = HashMap::new();
                 let api_record_map = std::mem::take(&mut *api_record.write());
                 for (time, count) in api_record_map {
-                    times.insert(time, count.load(Ordering::SeqCst));
+                    times.insert(time, count.load(Ordering::Relaxed));
                 }
                 apis.insert(api, times);
             }

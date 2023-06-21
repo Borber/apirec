@@ -29,7 +29,7 @@ impl AllApi {
     pub fn update(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
-        count.fetch_add(1, Ordering::SeqCst)
+        count.fetch_add(1, Ordering::Relaxed)
     }
 
     /// 添加一个 api
@@ -57,7 +57,7 @@ impl AllApi {
     pub fn get_api(&self, app: &str, api: &str) -> i64 {
         let count_api = { self.map.read().get(app).unwrap().clone() };
         let count = { count_api.read().get(api).unwrap().clone() };
-        count.load(Ordering::SeqCst)
+        count.load(Ordering::Relaxed)
     }
 
     /// 检测 api 是否存在
@@ -77,7 +77,7 @@ impl AllApi {
 
         count_api
             .values()
-            .map(|count| count.load(Ordering::SeqCst))
+            .map(|count| count.load(Ordering::Relaxed))
             .sum()
     }
 
@@ -90,7 +90,7 @@ impl AllApi {
 
         count_api
             .iter()
-            .map(|(api, count)| (api.to_owned(), count.load(Ordering::SeqCst)))
+            .map(|(api, count)| (api.to_owned(), count.load(Ordering::Relaxed)))
             .collect()
     }
 }
