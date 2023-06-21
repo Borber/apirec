@@ -4,7 +4,7 @@ use crate::pool;
 ///
 /// Update the number of api calls in the app table
 pub async fn update_count(app: &str, api: &str, count: &i64) {
-    let app_e = base58_monero::encode(app.as_bytes()).unwrap();
+    let app_e = bs58::encode(app.as_bytes()).into_string();
     let sql = format!(r#"update "{}" set count = ? where api = ?"#, app_e);
     sqlx::query(&sql)
         .bind(count)
@@ -18,8 +18,8 @@ pub async fn update_count(app: &str, api: &str, count: &i64) {
 ///
 /// Add a record
 pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
-    let app_e = base58_monero::encode(app.as_bytes()).unwrap();
-    let api_e = base58_monero::encode(api.as_bytes()).unwrap();
+    let app_e = bs58::encode(app.as_bytes()).into_string();
+    let api_e = bs58::encode(api.as_bytes()).into_string();
     let sql = format!(
         r#"insert into "{}_{}" (time, count) values ({}, {}) on conflict(time) do update set count = count + {}"#,
         app_e, api_e, time, count, count
@@ -31,8 +31,8 @@ pub async fn add_rec(app: &str, api: &str, time: &i64, count: &i64) {
 ///
 /// Make a new api table
 pub async fn make_api_table(app: &str, api: &str) {
-    let app_e = base58_monero::encode(app.as_bytes()).unwrap();
-    let api_e = base58_monero::encode(api.as_bytes()).unwrap();
+    let app_e = bs58::encode(app.as_bytes()).into_string();
+    let api_e = bs58::encode(api.as_bytes()).into_string();
     let sql = format!(
         r#"CREATE TABLE "{}_{}" (
             "time" integer NOT NULL,
@@ -56,7 +56,7 @@ pub async fn make_api_table(app: &str, api: &str) {
 ///
 /// Make a new app table
 pub async fn make_app_table(app: &str) -> bool {
-    let app_e = base58_monero::encode(app.as_bytes()).unwrap();
+    let app_e = bs58::encode(app.as_bytes()).into_string();
     let sql = format!(
         r#"CREATE TABLE "{}" (
         "api" text NOT NULL,

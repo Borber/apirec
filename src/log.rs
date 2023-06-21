@@ -1,7 +1,7 @@
 use time::{macros::format_description, UtcOffset};
 use tracing::{metadata::LevelFilter, subscriber};
 use tracing_subscriber::{
-    filter::Targets, fmt::time::OffsetTime, prelude::__tracing_subscriber_SubscriberExt, EnvFilter,
+    filter::Targets, fmt::time::OffsetTime, prelude::__tracing_subscriber_SubscriberExt,
 };
 
 /// 初始化日志模块
@@ -22,9 +22,7 @@ pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
         format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:3]"),
     );
 
-    let fmt = tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env())
-        .with_timer(local_time);
+    let fmt = tracing_subscriber::fmt().with_timer(local_time);
 
     // 如果是debug模式，日志输出到控制台，否则输出到文件
     // If it is debug mode, the log is output to the console, otherwise it is output to the file

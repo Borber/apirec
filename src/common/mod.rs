@@ -87,7 +87,7 @@ pub async fn init() -> ServiceContext {
     // Get the number of calls to each api in each app
     let mut apis = HashMap::new();
     for app in &apps {
-        let app_e = base58_monero::encode(app.as_bytes()).unwrap();
+        let app_e = bs58::encode(app.as_bytes()).into_string();
         let sql = format!(r#"select api, count from "{}""#, app_e);
 
         let apis_part: HashMap<String, Arc<AtomicI64>> = sqlx::query_as(&sql)

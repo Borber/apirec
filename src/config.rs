@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 pub static CONFIG: Lazy<ApplicationConfig> = Lazy::new(ApplicationConfig::default);
 
@@ -34,7 +34,7 @@ pub struct ConfigFile {
 
 /// 配置
 /// Configuration
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub struct ApplicationConfig {
     /// 服务名称
     ///
@@ -61,6 +61,7 @@ pub struct ApplicationConfig {
     /// Synchronization interval
     pub sync_interval: u64,
 }
+
 // TODO 这块默认配置应该还有优化的地方
 impl Default for ApplicationConfig {
     fn default() -> Self {
