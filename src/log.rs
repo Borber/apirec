@@ -16,6 +16,7 @@ macro_rules! init_log {
 
 pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
     // 设置时区
+    //
     // Set time zone
     let local_time = OffsetTime::new(
         UtcOffset::from_hms(8, 0, 0).unwrap(),
@@ -25,6 +26,7 @@ pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
     let fmt = tracing_subscriber::fmt().with_timer(local_time);
 
     // 如果是debug模式，日志输出到控制台，否则输出到文件
+    //
     // If it is debug mode, the log is output to the console, otherwise it is output to the file
     #[cfg(debug_assertions)]
     let (fmt, guard) = {

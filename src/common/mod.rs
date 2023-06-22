@@ -43,13 +43,16 @@ pub async fn init() -> ServiceContext {
     let file_path_s = file_path_s.replace("\\\\?\\", "");
     let db_path = format!("sqlite://{}", file_path_s);
     // 检测数据库是否存在
+    //
     // Check if the database exists
     if !file_path.exists() {
         // 如果数据库文件不存在，创建数据库文件
+        //
         // Create the data directory if it doesn't exist
         std::fs::create_dir(file_path.parent().unwrap()).unwrap();
         std::fs::File::create(file_path).unwrap();
         // 创建数据库
+        //
         // Connect to the database
         let conn = SqlitePoolOptions::new()
             .max_connections(5)
@@ -66,6 +69,7 @@ pub async fn init() -> ServiceContext {
     }
 
     // 创建数据库连接池
+    //
     // Create the database pool
     let pool = SqlitePoolOptions::new()
         .max_connections(5)
@@ -74,6 +78,7 @@ pub async fn init() -> ServiceContext {
         .unwrap();
 
     // 获取所有 app
+    //
     // Get all apps
     let apps: HashSet<String> = sqlx::query_as("select app from apps")
         .fetch_all(&pool)
@@ -84,6 +89,7 @@ pub async fn init() -> ServiceContext {
         .collect();
 
     // 获取每个app中各api的调用次数
+    //
     // Get the number of calls to each api in each app
     let mut apis = HashMap::new();
     for app in &apps {

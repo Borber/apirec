@@ -32,6 +32,7 @@ impl WaitRecord {
     /// Add record
     pub fn add(&self, app: &str, api: &str) {
         // 若 app 不存在, 则添加 app
+        //
         // If the app does not exist, add the app
         if !self.map.read().contains_key(app) {
             self.map
@@ -39,6 +40,7 @@ impl WaitRecord {
                 .insert(app.to_owned(), Arc::new(RwLock::new(HashMap::new())));
         }
         // 若 api 不存在, 则添加 api
+        //
         // If the api does not exist, add the api
         let record_api = { self.map.read().get(app).unwrap().clone() };
         if !record_api.read().contains_key(api) {

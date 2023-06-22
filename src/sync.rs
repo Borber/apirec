@@ -18,10 +18,12 @@ pub async fn db_sync() {
         tokio::time::sleep(Duration::from_secs(CONFIG.sync_interval)).await;
 
         // 获取需要新增的 app
+        //
         // Get new app
         let wait_app = context!().wait_app.get_all();
 
         // 添加 app, 建立相关表
+        //
         // Add app, build related tables
         if !wait_app.is_empty() {
             info!("wait_app: {:?}", wait_app);
@@ -31,10 +33,12 @@ pub async fn db_sync() {
         }
 
         // 获取需要新增的api
+        //
         // Get new api
         let wait_api = context!().wait_api.get_apis();
 
         // 添加 api, 建立相关表
+        //
         // Add api, build related tables
         if !wait_api.is_empty() {
             info!("wait_api: {:?}", wait_api);
@@ -46,12 +50,14 @@ pub async fn db_sync() {
         }
 
         // 获取需要新增的记录
+        //
         // Get new record
         let wait_record = context!().wait_record.get_records();
         if !wait_record.is_empty() {
             info!("wait_record: {:?}", wait_record);
 
             // 需要更新Api的值
+            //
             // Api value to be updated
             let api_update: HashMap<&String, HashMap<&String, i64>> = wait_record
                 .iter()
@@ -67,6 +73,7 @@ pub async fn db_sync() {
             info!("api_update: {:?}", api_update);
 
             // 更新api表中的记录
+            //
             // Update the record in the api table
             for (app, apis) in api_update.iter() {
                 for (api, count) in apis.iter() {
@@ -75,6 +82,7 @@ pub async fn db_sync() {
             }
 
             // 添加记录
+            //
             // Add record
             for (app, apis) in wait_record.iter() {
                 for (api, times) in apis.iter() {

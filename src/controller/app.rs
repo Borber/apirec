@@ -18,6 +18,7 @@ use crate::{
 /// Get app access count
 pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
     // 检测 app 是否存在
+    //
     // Check if app exists
     if !context!().apps.check_app(&app) {
         return Resp::fail(APP_NOT_FOUND.0, APP_NOT_FOUND.1);
@@ -28,6 +29,7 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
             let total: i64 = apis.values().sum();
 
             // 将 apis 转换为 ApiCount 结构体, 以便排序
+            //
             // Convert apis to ApiCount structure for sorting
             let mut apis: Vec<ApiCount> = apis
                 .into_iter()
@@ -35,6 +37,7 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
                 .collect();
 
             // 除非特别指定, 否则默认按从大到小顺序
+            //
             // Unless specified, the default is in descending order
             match dto.sort {
                 Some(false) => apis.sort_by(|a, b| a.count.cmp(&b.count)),
@@ -42,6 +45,7 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
             }
 
             // 返回部分结果
+            //
             // Return part of the result
             let apis = match dto.apis {
                 Some(parts) => apis
@@ -71,6 +75,7 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
 /// Add app
 pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     // 检测 app name 是否合法
+    //
     // Check if app name is valid
     if !util::is_valid(&app) {
         return Resp::fail(APP_NAME_IS_NO_VALID.0, APP_NAME_IS_NO_VALID.1);
@@ -84,12 +89,15 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
 
     tokio::spawn(async move {
         // 新增 app
+        //
         // Add app
         context!().apps.add(&app);
         // 将新增 app 添加到等待新增的 app 中
+        //
         // Add the new app to the app to be added
         context!().wait_app.add(&app);
         // 将新增 app 添加到 apis 内存对象中优先提供计数功能, 并保证 新增 api 时 app 存在
+        //
         // Add the new app to the apis memory object to provide the count function first, and ensure that the new api exists when the app exists
         context!().apis.add_app(&app);
     });
