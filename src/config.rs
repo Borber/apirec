@@ -62,7 +62,6 @@ pub struct ApplicationConfig {
     pub sync_interval: u64,
 }
 
-// TODO 这块默认配置应该还有优化的地方
 impl Default for ApplicationConfig {
     fn default() -> Self {
         let exe_path = std::env::current_exe().expect("Failed to get current executable");

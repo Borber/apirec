@@ -2,7 +2,7 @@
 
 ## 目的
 
-统计调用次数
+统计次数
 
 ## 理念
 
@@ -38,7 +38,7 @@ port = 3006
 log_level = "info"
 #日志分割 day, hour, minute
 log_split = "day"
-#同步间隔
+#同步间隔(秒)
 sync_interval = 30
 
 ```
