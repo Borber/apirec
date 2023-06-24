@@ -1,5 +1,6 @@
 [package]
 name = "apirec"
+description = "A simple API recorder"
 version = "0.1.1"
 edition = "2021"
 
