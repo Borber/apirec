@@ -4,16 +4,6 @@ use tracing_subscriber::{
     filter::Targets, fmt::time::OffsetTime, prelude::__tracing_subscriber_SubscriberExt,
 };
 
-/// 初始化日志模块
-///
-/// Initialize log module
-#[macro_export]
-macro_rules! init_log {
-    () => {
-        let _guard = $crate::log::init();
-    };
-}
-
 pub fn init() -> tracing_appender::non_blocking::WorkerGuard {
     // 设置时区
     //

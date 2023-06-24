@@ -17,19 +17,19 @@ mod common;
 mod config;
 mod controller;
 mod db;
+mod error;
 mod handler;
 mod log;
 mod model;
 mod resp;
 mod sync;
 mod util;
-mod error;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     CONTEXT.get_or_init(init).await;
 
-    init_log!();
+    let _guard = log::init();
 
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))

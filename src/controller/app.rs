@@ -88,6 +88,12 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     info!("Add app: {}", app);
 
     tokio::spawn(async move {
+        // 将新增 app 添加到 apis 内存对象中优先提供计数功能,
+        // 以保证 新增 api 时 app 存在
+        //
+        // Add the new app to the apis memory object to provide counting function first,
+        // to ensure that the app exists when adding a new api
+        context!().apis.add_app(&app);
         // 新增 app
         //
         // Add app
@@ -96,10 +102,6 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
         //
         // Add the new app to the app to be added
         context!().wait_app.add(&app);
-        // 将新增 app 添加到 apis 内存对象中优先提供计数功能, 并保证 新增 api 时 app 存在
-        //
-        // Add the new app to the apis memory object to provide the count function first, and ensure that the new api exists when the app exists
-        context!().apis.add_app(&app);
     });
 
     Resp::success("Add app success".to_owned())
