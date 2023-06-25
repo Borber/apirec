@@ -21,7 +21,6 @@ use self::{
     record::WaitRecord,
 };
 
-// TODO 使用extension或者state传进handler里, 而非全局变量
 pub static CONTEXT: OnceCell<ServiceContext> = OnceCell::const_new();
 
 #[macro_export]
