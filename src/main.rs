@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use anyhow::{Ok, Result};
 use axum::{
     routing::{get, post},
-    Extension, Router,
+    Router,
 };
 use common::{init, CONTEXT};
 use config::CONFIG;

@@ -1,11 +1,8 @@
-use std::sync::Arc;
-
 use anyhow::Ok;
-use axum::{extract::Path, Extension};
+use axum::extract::Path;
 use tracing::info;
 
 use crate::{
-    common::ServiceContext,
     context,
     error::{API_ALREADY_EXISTS, API_NAME_IS_NO_VALID, API_NOT_FOUND, APP_NOT_FOUND},
     handler::Json,
