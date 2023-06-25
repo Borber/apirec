@@ -1,39 +1,155 @@
-中文 | English
+中文 | [English](./README_EN.md)
 
-## 目的
+# Apirec
 
-统计次数
+简单的 Api 记录工具
 
 ## 理念
 
 -   快速
 -   轻量
--   持久化
 -   单文件
+-   持久化
 
 ## 部署
+
+下载可执行文件直接运行即可
 
 ## 接口
 
 ### 添加 App
 
+接口地址: `127.0.0.1:8000/api`
+
+请求方式: `POST`
+
+请求参数:
+
+```json
+{
+    "app": "test1"
+}
+```
+
+样例返回:
+
+```json
+{
+    "code": 0,
+    "msg": "success",
+    "data": "Add app success"
+}
+```
+
 ### 向 App 添加 Api
+
+接口地址: `127.0.0.1:8000/api/test1`
+
+请求方式: `POST`
+
+请求参数:
+
+```json
+{
+    "api": "ttt1"
+}
+```
+
+样例返回:
+
+```json
+{
+    "code": 0,
+    "msg": "success",
+    "data": "Success"
+}
+```
 
 ### 添加 Api 调用记录
 
+接口地址: `127.0.0.1:8000/api/test1/ttt1`
+
+请求方式: `POST`
+
+请求参数: 无
+
+样例返回:
+
+```json
+{
+    "code": 0,
+    "msg": "success",
+    "data": 2498788
+}
+```
+
 ### 获取 Api 调用记录
+
+接口地址: `127.0.0.1:8000/api/test1/ttt1`
+
+请求方式: `GET`
+
+请求参数: 无
+
+样例返回:
+
+```json
+{
+    "code": 0,
+    "msg": "success",
+    "data": 2498788
+}
+```
 
 ### 获取 App 下所有 Api 调用记录
 
-## 设置
+接口地址: `127.0.0.1:8000/api/test1`
 
-默认配置
+请求方式: `GET`
+
+请求参数:
+
+```json
+{
+    "limit": 2,
+    "sort": true,
+    "apis": ["ttt1", "ttt2"]
+}
+```
+
+-   limit: 限制返回条数
+-   sort: 是否排序
+-   apis: 指定需要返回的 api
+
+样例返回:
+
+```json
+{
+    "code": 0,
+    "msg": "success",
+    "data": {
+        "total": 2498788,
+        "apis": [
+            {
+                "api": "ttt1",
+                "count": 2498788
+            },
+            {
+                "api": "ttt2",
+                "count": 0
+            }
+        ]
+    }
+}
+```
+
+## 设置
 
 ```toml
 #名称
 server_name = "apirec"
 #服务端口
-port = 3006
+port = 8000
 #日志级别
 log_level = "info"
 #日志分割 day, hour, minute
@@ -45,7 +161,30 @@ sync_interval = 30
 
 ## 基准测试
 
-## 感谢
+目前没有找到合适的测试方法, 目前在我的笔记本上测试结果如下
+
+-   CPU 12th Gen Intel(R) Core(TM) i7-1255U
+-   内存 16G 4267MHz LPDDR4x
+
+```bash
+ .\rsb.exe -l -m POST -d 10  http://127.0.0.1:8000/api/test1/ttt1
+Post "http://127.0.0.1:8000/api/test1/ttt1" with for 10s using 50 connections
+▪▪▪▪▪ [00:00:10] [####################] 10s/10s (100%)
+Statistics         Avg          Stdev          Max
+  Reqs/sec       85716.89       663.19       86343.00
+  Latency        578.39µs      152.24µs       4.40ms
+  Latency Distribution
+     50%     462.04µs
+     75%     512.68µs
+     90%     545.87µs
+     99%     572.98µs
+  HTTP codes:
+    1XX - 0, 2XX - 855982, 3XX - 0, 4XX - 0, 5XX - 0
+    others - 0
+  Throughput:   86447.16/s
+```
+
+平均每秒 **8.6** 万次请求
 
 ## 许可证
 
