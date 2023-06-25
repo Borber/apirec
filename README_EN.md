@@ -164,21 +164,21 @@ No suitable test method has been found, and the results on my laptop so far are 
 -   Memory 16G 4267MHz LPDDR4x
 
 ```bash
- .\rsb.exe -l -m POST -d 10  http://127.0.0.1:8000/api/test1/ttt1
+.\rsb.exe -l -m POST -d 10  http://127.0.0.1:8000/api/test1/ttt1
 Post "http://127.0.0.1:8000/api/test1/ttt1" with for 10s using 50 connections
 ▪▪▪▪▪ [00:00:10] [####################] 10s/10s (100%)
 Statistics         Avg          Stdev          Max
-  Reqs/sec       85716.89       663.19       86343.00
-  Latency        578.39µs      152.24µs       4.40ms
+  Reqs/sec       86257.56      1482.19       88056.00
+  Latency        575.64µs      148.94µs       4.09ms
   Latency Distribution
-     50%     462.04µs
-     75%     512.68µs
-     90%     545.87µs
-     99%     572.98µs
+     50%     460.55µs
+     75%     510.74µs
+     90%     543.59µs
+     99%     570.45µs
   HTTP codes:
-    1XX - 0, 2XX - 855982, 3XX - 0, 4XX - 0, 5XX - 0
+    1XX - 0, 2XX - 859995, 3XX - 0, 4XX - 0, 5XX - 0
     others - 0
-  Throughput:   86447.16/s
+  Throughput:   86859.69/s
 ```
 
 Average of **8.6** million requests per second
