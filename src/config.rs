@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 
-pub static CONFIG: Lazy<ApplicationConfig> = Lazy::new(ApplicationConfig::default);
+pub static CONFIG: Lazy<ApplicationConfig> = Lazy::new(ApplicationConfig::load);
 
 /// 配置
 ///
@@ -62,8 +62,8 @@ pub struct ApplicationConfig {
     pub sync_interval: u64,
 }
 
-impl Default for ApplicationConfig {
-    fn default() -> Self {
+impl ApplicationConfig {
+    fn load() -> Self {
         let exe_path = std::env::current_exe().expect("Failed to get current executable");
         let exe_dir = exe_path.parent().unwrap();
         let config_file = exe_dir.join("config.toml");
