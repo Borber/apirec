@@ -19,11 +19,7 @@ serde_json = "1"
 basic-toml = "0.1"
 parking_lot = { version = "0.12", features = ["nightly"] }
 tower-http = { version = "0.4", features = ["cors"] }
-sqlx = { version = "0.7.0-alpha.3", features = [
-    "runtime-tokio",
-    "sqlite",
-    "macros",
-] }
+sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "macros"] }
 hashbrown = { version = "0.14", features = ["serde", "nightly"] }
 bs58 = "0.5"
 
