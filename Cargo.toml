@@ -7,8 +7,10 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 tokio = { version = "*", features = ["full"] }
-axum = "0.6"
-axum-extra = "0.7"
+axum = "0.7"
+axum-extra = "0.9"
+axum-macros = "0.4"
+
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["local-time"] }
 tracing-appender = "0.2"
@@ -18,7 +20,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 basic-toml = "0.1"
 parking_lot = { version = "0.12", features = ["nightly"] }
-tower-http = { version = "0.4", features = ["cors"] }
+tower-http = { version = "0.5", features = ["cors"] }
 sqlx = { version = "0.7", features = ["runtime-tokio", "sqlite", "macros"] }
 hashbrown = { version = "0.14", features = ["serde", "nightly"] }
 bs58 = "0.5"

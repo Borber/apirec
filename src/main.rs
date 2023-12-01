@@ -51,9 +51,9 @@ async fn main() -> Result<()> {
     });
 
     info!("Server started at {}", CONFIG.server_url);
-    axum::Server::bind(&CONFIG.server_url.parse().unwrap())
-        .serve(app.into_make_service())
-        .await?;
+
+    let listener = tokio::net::TcpListener::bind(&CONFIG.server_url).await?;
+    axum::serve(listener, app).await?;
 
     Ok(())
 }

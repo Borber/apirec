@@ -83,7 +83,7 @@ pub async fn make_app_table(app: &str) -> bool {
     // 将新建的表单插入到apps表中
     //
     // Insert the new table into the apps table
-    let sql = format!(r#"insert into "apps" (app) values (?);"#);
+    let sql = r#"insert into "apps" (app) values (?);"#.to_string();
     sqlx::query(&sql).bind(app).execute(pool!()).await.unwrap();
 
     true
