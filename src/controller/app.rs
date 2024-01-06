@@ -17,11 +17,8 @@ use crate::{
 ///
 /// Get app access count
 pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp<GetAppVO> {
-    // 检测 app 是否存在
-    //
-    // Check if app exists
     if !context!().apps.check_app(&app) {
-        return Resp::fail(APP_NOT_FOUND.0, APP_NOT_FOUND.1);
+        return Resp::fail(APP_NOT_FOUND);
     }
     match body {
         Some(Json(dto)) => {
@@ -74,15 +71,11 @@ pub async fn get(Path(app): Path<String>, body: Option<Json<GetAppDTO>>) -> Resp
 ///
 /// Add app
 pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
-    // 检测 app name 是否合法
-    //
-    // Check if app name is valid
     if !util::is_valid(&app) {
-        return Resp::fail(APP_NAME_IS_NO_VALID.0, APP_NAME_IS_NO_VALID.1);
-    };
-
+        return Resp::fail(APP_NAME_IS_NO_VALID);
+    }
     if context!().apps.check_app(&app) {
-        return Resp::fail(APP_ALREADY_EXISTS.0, APP_ALREADY_EXISTS.1);
+        return Resp::fail(APP_ALREADY_EXISTS);
     }
 
     info!("Add app: {}", app);
@@ -93,13 +86,7 @@ pub async fn add(Json(AddAppDTO { app }): Json<AddAppDTO>) -> Resp<String> {
     // Add the new app to the apis memory object to provide counting function first,
     // to ensure that the app exists when adding a new api
     context!().apis.add_app(&app);
-    // 新增 app
-    //
-    // Add app
     context!().apps.add(&app);
-    // 将新增 app 添加到等待新增的 app 中
-    //
-    // Add the new app to the app to be added
     context!().wait_app.add(&app);
 
     Resp::success("Add app success".to_owned())

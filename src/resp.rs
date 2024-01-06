@@ -25,7 +25,7 @@ where
     fn from(item: Result<T>) -> Self {
         match item {
             Ok(data) => Resp::success(data),
-            Err(e) => Resp::fail(1, &e.to_string()),
+            Err(e) => Resp::fail((1, &e.to_string())),
         }
     }
 }
@@ -42,10 +42,10 @@ where
         }
     }
 
-    pub fn fail(code: i64, e: &str) -> Self {
+    pub fn fail(typ: (i64, &str)) -> Self {
         Resp {
-            code,
-            msg: Some(e.to_owned()),
+            code: typ.0,
+            msg: Some(typ.1.to_owned()),
             data: None,
         }
     }
