@@ -40,6 +40,7 @@ async fn main() -> Result<()> {
                     .max_age(3600)
                     .finish(),
             )
+            .route("/", web::get().to(|| async { "Hello, world!" }))
             .service(App::add)
             .service(App::get)
             .service(Api::add)

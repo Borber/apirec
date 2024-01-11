@@ -1,15 +1,9 @@
 pub mod app;
 
-use std::{
-    future::Future,
-    pin::Pin,
-    task::{Context, Poll},
-};
-
 use anyhow::Result;
 use ntex::{
-    http::StatusCode,
-    web::{ErrorRenderer, HttpRequest, HttpResponse, Responder},
+    http::{Response, StatusCode},
+    web::{ErrorRenderer, HttpRequest, Responder},
 };
 use serde::Serialize;
 
@@ -20,39 +14,16 @@ pub struct Resp<T> {
     pub data: Option<T>,
 }
 
-pub struct Ready<T>(Option<T>);
-
-impl<T> Unpin for Ready<T> {}
-
-impl<T> From<T> for Ready<T> {
-    fn from(t: T) -> Self {
-        Ready(Some(t))
-    }
-}
-
-impl<T> Future for Ready<T> {
-    type Output = T;
-
-    #[inline]
-    fn poll(mut self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<T> {
-        Poll::Ready(self.0.take().expect("Ready polled after completion"))
-    }
-}
-
 // 自定义 ntex 的返回体, 以达到统一的目的
 // Custom ntex return body to achieve the same purpose
 impl<T, Err: ErrorRenderer> Responder<Err> for Resp<T>
 where
     T: Serialize,
 {
-    type Future = Ready<HttpResponse>;
-
-    fn respond_to(self, _: &HttpRequest) -> Self::Future {
-        Ready(Some(
-            HttpResponse::build(StatusCode::OK)
-                .content_type("application/json; charset=utf-8")
-                .body(serde_json::to_string(&self).unwrap()),
-        ))
+    async fn respond_to(self, _: &HttpRequest) -> Response {
+        Response::build(StatusCode::OK)
+            .content_type("application/json; charset=utf-8")
+            .body(serde_json::to_string(&self).unwrap())
     }
 }
 
